@@ -50,7 +50,13 @@ int main(int argc, char** argv) {
     }
     xnp1->size = 1;
     xnp1->array[0] = 2;
-    printf("memory for xn and xnp1 successfully allocated, value in the first element of array with size %llu: xn is %llu and xnp1 is %llu.",size,  xn->array[0], xnp1->array[0]);
+    printf("memory for xn and xnp1 successfully allocated, value in the first element of array with size %llu: xn is %llu and xnp1 is %llu.\n",size,  xn->array[0], xnp1->array[0]);
+    if (*output == 'd') {
+        printf("output numeral system is decimal");
+    }
+    else {
+        printf("output numeral system is hexadecimal");
+    }
     return 0;
 }
 
