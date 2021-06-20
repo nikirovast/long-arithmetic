@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
+#include "errno.h"
 
 struct bignum {
     uint64_t size;
@@ -20,8 +22,17 @@ int main(int argc, char** argv) {
         return 1;
     }
     uint64_t size = strtoull(argv[1], NULL, 0);
-    if (size == 0) {
+    if (errno == ERANGE) {
+        fprintf(stderr, "the given number %llu can not be represented, please pick a number < UINT64_MAX", size);
+        return 1;
+    }
+    if (size == 0ULL) {
         fprintf(stderr, "invalid number of iterations: it should be > 0 or the given parameter was not a number");
+        return 1;
+    }
+    char *output = argv[2];
+    if ((*output != 'd' && *output != 'x') || strlen(output) > 1) {
+        fprintf(stderr, "invalid numeral system for output");
         return 1;
     }
     struct bignum* xn = malloc(size + 1); //size + 1 because of size parameter in the struct
