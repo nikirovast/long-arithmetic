@@ -30,8 +30,8 @@ int main(int argc, char** argv) {
         return 1;
     }
     xnp1->size = 1;
-    xnp1->array[0] = 1;
-    printf("memory for xn and xnp1 successfully allocated");
+    xnp1->array[0] = 2;
+    printf("Memory for xn and xnp1 successfully allocated, value in the first element of array: xn is %llu and xnp1 is %llu.",  xn->array[0], xnp1->array[0]);
     return 0;
 }
 
