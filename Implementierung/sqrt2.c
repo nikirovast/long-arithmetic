@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
         fprintf(stderr, "the given number %llu can not be represented, please pick a number < UINT64_MAX", size);
         return 1;
     }
-    if (size == 0ULL) {
+    if (size < 0ULL || *argv[1] == '-') {
         fprintf(stderr, "invalid number of iterations: it should be > 0 or the given parameter was not a number");
         return 1;
     }
