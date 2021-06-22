@@ -7,6 +7,7 @@
 // The result is in the first parameter
 // !IMP First param should have enough space
 // Could be optimized later
+// in VSCode 1st is in RCX, 2nd in RDX, 3rd in R8 :(((
 sum:
     mov r12, [r8]
     mov r13, [rdx]
