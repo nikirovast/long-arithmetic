@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "errno.h"
+#include "assert.h"
 
 #define N 32
 #define ELEM_SIZE_MAX UINT32_MAX
@@ -42,23 +43,51 @@ bignum* new_bignum(size_t size) {
 // in VSCode 1st is in RCX, 2nd in RDX, 3rd in R8
 int main(int argc, char** argv) {
   // Yulia for tests
-  /*
+
   bignum *a = new_bignum(2);
   bignum *b = new_bignum(1);
   *(a->array + 0) = 4294967295;
   *(a->array + 1) = 1;
   *(b->array + 0) = 4294967295;
+    printf("%u, %u, %u", a->array[0], a->array[1], b-> array[0]);
   bignum *res = mul(a, b);
 
   uint64_t s = res->size;
-  elem_size_t first = res->array[0];
-  elem_size_t second = res->array[1];*/
+
+    printf("\n");
+    printf("Size: %lu\n",res->size);
+  for (int i = res-> size - 1; i >= 0; i--) {
+      printf("%u\n", res->array[i]);
+  }
+
+
+  //test 1
+    bignum *first = new_bignum(2);
+    bignum *second = new_bignum(1);
+    *(first->array + 0) = 1234;
+    *(first->array + 1) = 1;
+    *(second->array + 0) = 129;
+    bignum *res1 = mul(first, second);
+    //8589937060
+    assert(res1->array[0] == 2468);
+    assert(res1->array[1] == 2);
+
+    //test 2
+    bignum *third = new_bignum(1);
+    bignum *fourth = new_bignum(1);
+    *(third->array) = 65537;
+    *(fourth->array) = 89340;
+    bignum *res2 = mul(third, fourth);
+    //5855075580
+    assert(res2->array[0] == 1560108285);
+    assert(res2->array[1] == 1);
 
   /* bignum *b = new_bignum(sizeof(elem_size_t) * numItems);
   b->size = numItems;
   uint64_t arr2[2] = {3, 3};
   strcpy(a->array, arr2);
-  sum(3, a, b);*/
+  sum(3, a, b);
+   */
 
   // implement parsing of arguments, size = 5 as example
   if (argc != 3) {
@@ -165,7 +194,7 @@ bignum* add(bignum* xn, bignum* xnp1) {
 
 /**
  *
- * Substract xnp1 from xn.
+ * Subtract xnp1 from xn.
  *
  */
 
@@ -203,7 +232,7 @@ bignum* sub(bignum* xn, bignum* xnp1) {
 
 /**
  *
- * Multiplicate two big numbers xnp1 by xn.
+ * Multiply two big numbers xnp1 by xn.
  *
  */
 
@@ -261,8 +290,8 @@ bignum* mul(bignum* xn, bignum* xnp1) {
     bignum* ad_add_bc = sub(abcd_sub_ac, bd);
 
     // TODO rewrite it here
-    // bignum* ac_shift =
-    realloc(ac, sizeof(*ac) + sizeof(elem_size_t) * (ac->size + 2));
+     /*bignum* ac_shift =
+    realloc(ac, sizeof(*ac) + sizeof(elem_size_t) * (ac->size + 2));*/
 
     elem_size_t* tmp = realloc(ac->array, sizeof(elem_size_t) * (ac->size + 2));
     if (tmp == NULL) {
@@ -283,9 +312,9 @@ bignum* mul(bignum* xn, bignum* xnp1) {
       free(tmp);
       ad_add_bc->size += 1;
     }
-    // bignum* ad_add_bc_shift =
-    realloc(ad_add_bc,
-            sizeof(*ad_add_bc) + sizeof(elem_size_t) * (ad_add_bc->size + 1));
+     /*bignum* ad_add_bc_shift =
+        realloc(ad_add_bc,
+            sizeof(*ad_add_bc) + sizeof(elem_size_t) * (ad_add_bc->size + 1));*/
     bignum* res = add(add(ac_shift, ad_add_bc_shift), bd);
     free(abcd);
     free(abcd_sub_ac);
@@ -302,7 +331,7 @@ bignum* mul(bignum* xn, bignum* xnp1) {
 
 /**
  *
- * Multiplicate two elem_size_t numbers x by y.
+ * Multiply two elem_size_t numbers x by y.
  *
  */
 
