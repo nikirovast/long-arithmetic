@@ -26,8 +26,16 @@ bignum* mul2num(elem_size_t x, elem_size_t y);
 
 bignum* new_bignum(size_t size) {
   bignum* res = malloc(sizeof(bignum));
+  if (res == NULL) {
+    fprintf(stderr, "Couldn't allocate memory for a struct");
+    exit(1);
+  }
   res->size = size;
   res->array = malloc(sizeof(elem_size_t) * size);
+  if (res->array == NULL) {
+    fprintf(stderr, "Couldn't allocate memory for an array");
+    exit(1);
+  }
   return res;
 }
 
@@ -140,9 +148,17 @@ bignum* add(bignum* xn, bignum* xnp1) {
     i++;
   }
   if (carry) {
-    res->array = realloc(res->array, sizeof(elem_size_t) * (size2 + 1));
-    res->size += 1;
-    *(res->array + i) = carry;
+    elem_size_t* tmp = realloc(res->array, sizeof(elem_size_t) * (size2 + 1));
+    if (tmp == NULL) {
+      fprintf(stderr, "Couldn't reallocate memory for a carry in sum");
+      exit(1);
+
+    } else {
+      res->array = tmp;
+      free(tmp);
+      res->size += 1;
+      *(res->array + i) = carry;
+    }
   }
   return res;
 }
@@ -198,19 +214,35 @@ bignum* mul(bignum* xn, bignum* xnp1) {
   if (size1 > 1 || size2 > 1) {
     uint64_t aNewSize = size1 / 2;
     bignum* a = malloc(sizeof(*a));
+    if (a == NULL) {
+      fprintf(stderr, "Couldn't allocate memory for a in mul");
+      exit(1);
+    }
     a->size = aNewSize;
     a->array = xn->array;
     uint64_t bNewSize = size1 - aNewSize;
     bignum* b = malloc(sizeof(*b));
+    if (b == NULL) {
+      fprintf(stderr, "Couldn't allocate memory for b in mul");
+      exit(1);
+    }
     b->size = bNewSize;
     b->array = xn->array + aNewSize;
 
     uint64_t cNewSize = size2 / 2;
     bignum* c = malloc(sizeof(*c));
+    if (c == NULL) {
+      fprintf(stderr, "Couldn't allocate memory for c in mul");
+      exit(1);
+    }
     c->size = cNewSize;
     c->array = xnp1->array;
     uint64_t dNewSize = size2 - cNewSize;
     bignum* d = malloc(sizeof(*d));
+    if (d == NULL) {
+      fprintf(stderr, "Couldn't allocate memory for d in mul");
+      exit(1);
+    }
     d->size = dNewSize;
     d->array = xnp1->array + dNewSize;
 
@@ -218,15 +250,27 @@ bignum* mul(bignum* xn, bignum* xnp1) {
     bignum* bd = mul(b, d);
     bignum* a_add_b = add(a, b);
     bignum* c_add_d = add(c, d);
+    free(a);
+    free(b);
+    free(c);
+    free(d);
     bignum* abcd = mul(a_add_b, c_add_d);
+    free(a_add_b);
+    free(c_add_d);
     bignum* abcd_sub_ac = sub(abcd, ac);
     bignum* ad_add_bc = sub(abcd_sub_ac, bd);
+    // TODO rewrite it here
     bignum* ac_shift =
         realloc(ac, sizeof(*ac) + sizeof(elem_size_t) * (ac->size + 2));
     bignum* ad_add_bc_shift =
         realloc(ad_add_bc, sizeof(*ad_add_bc) +
                                sizeof(elem_size_t) * (ad_add_bc->size + 1));
     bignum* res = add(add(ac_shift, ad_add_bc_shift), bd);
+    free(abcd);
+    free(abcd_sub_ac);
+    free(ad_add_bc);
+    free(ac_shift);
+    free(ad_add_bc_shift);
     return res;
   } else if (xn->size == 0 || xnp1->size == 0) {
     bignum* res = malloc(sizeof(*xn));
@@ -272,7 +316,9 @@ bignum* mul2num(elem_size_t x, elem_size_t y) {
   bd.array = bd_array;
   bignum* ac_add_ad = add(&ac, &ad);
   bignum* ac_add_ad_add_bc = add(ac_add_ad, &bc);
+  free(ac_add_ad);
   bignum* res = add(ac_add_ad_add_bc, &bd);
+  free(ac_add_ad_add_bc);
 
   return res;
 }
