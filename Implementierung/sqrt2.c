@@ -259,12 +259,33 @@ bignum* mul(bignum* xn, bignum* xnp1) {
     free(c_add_d);
     bignum* abcd_sub_ac = sub(abcd, ac);
     bignum* ad_add_bc = sub(abcd_sub_ac, bd);
+
     // TODO rewrite it here
-    bignum* ac_shift =
-        realloc(ac, sizeof(*ac) + sizeof(elem_size_t) * (ac->size + 2));
-    bignum* ad_add_bc_shift =
-        realloc(ad_add_bc, sizeof(*ad_add_bc) +
-                               sizeof(elem_size_t) * (ad_add_bc->size + 1));
+    // bignum* ac_shift =
+    realloc(ac, sizeof(*ac) + sizeof(elem_size_t) * (ac->size + 2));
+
+    elem_size_t* tmp = realloc(ac->array, sizeof(elem_size_t) * (ac->size + 2));
+    if (tmp == NULL) {
+      fprintf(stderr, "Couldn't reallocate memory for a shift in sum");
+      exit(1);
+    } else {
+      ac->array = tmp;
+      free(tmp);
+      ac->size += 2;
+    }
+    tmp =
+        realloc(ad_add_bc->array, sizeof(elem_size_t) * (ad_add_bc->size + 1));
+    if (tmp == NULL) {
+      fprintf(stderr, "Couldn't reallocate memory for a shift in sum");
+      exit(1);
+    } else {
+      ad_add_bc->array = tmp;
+      free(tmp);
+      ad_add_bc->size += 1;
+    }
+    // bignum* ad_add_bc_shift =
+    realloc(ad_add_bc,
+            sizeof(*ad_add_bc) + sizeof(elem_size_t) * (ad_add_bc->size + 1));
     bignum* res = add(add(ac_shift, ad_add_bc_shift), bd);
     free(abcd);
     free(abcd_sub_ac);
