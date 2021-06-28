@@ -290,8 +290,6 @@ bignum* mul(bignum* xn, bignum* xnp1) {
     free(abcd);
     free(abcd_sub_ac);
     free(ad_add_bc);
-    free(ac_shift);
-    free(ad_add_bc_shift);
     return res;
   } else if (xn->size == 0 || xnp1->size == 0) {
     bignum* res = malloc(sizeof(*xn));
