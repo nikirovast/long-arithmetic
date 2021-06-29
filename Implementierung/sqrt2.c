@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "assert.h"
 #include "errno.h"
+#include "assert.h"
 
 #define N 32
 #define ELEM_SIZE_MAX UINT32_MAX
@@ -19,8 +19,11 @@ struct bignum {
 };
 
 extern void sum(uint64_t n, bignum* xn, bignum* xnp1);
-elem_size_t inverse(elem_size_t x);
 bignum* mul(bignum* xn, bignum* xnp1);
+void zero_justify(bignum* n);
+void digit_shift(bignum* n, int count);
+int compare_bignum(bignum* xn, bignum* xnp1);
+bignum* div2bignums(bignum* xn, bignum* xnp1);
 // void sqrt2(uint64_t n, bignum *xn, bignum *xnp1);#
 bignum* add(bignum* xn, bignum* xnp1);
 bignum* sub(bignum* xn, bignum* xnp1);
@@ -45,42 +48,43 @@ bignum* new_bignum(size_t size) {
 int main(int argc, char** argv) {
   // Yulia for tests
 
-  bignum* a = new_bignum(2);
-  bignum* b = new_bignum(1);
+  bignum *a = new_bignum(2);
+  bignum *b = new_bignum(1);
   *(a->array + 0) = 4294967295;
   *(a->array + 1) = 1;
   *(b->array + 0) = 4294967295;
-  printf("%u, %u, %u", a->array[0], a->array[1], b->array[0]);
-  bignum* res = mul(a, b);
+    printf("%u, %u, %u", a->array[0], a->array[1], b-> array[0]);
+  bignum *res = mul(a, b);
 
   uint64_t s = res->size;
 
-  printf("\n");
-  printf("Size: %lu\n", res->size);
-  for (int i = res->size - 1; i >= 0; i--) {
-    printf("%u\n", res->array[i]);
+    printf("\n");
+    printf("Size: %lu\n",res->size);
+  for (int i = res-> size - 1; i >= 0; i--) {
+      printf("%u\n", res->array[i]);
   }
 
-  // test 1
-  bignum* first = new_bignum(2);
-  bignum* second = new_bignum(1);
-  *(first->array + 0) = 1234;
-  *(first->array + 1) = 1;
-  *(second->array + 0) = 129;
-  bignum* res1 = mul(first, second);
-  // 8589937060
-  assert(res1->array[0] == 2468);
-  assert(res1->array[1] == 2);
 
-  // test 2
-  bignum* third = new_bignum(1);
-  bignum* fourth = new_bignum(1);
-  *(third->array) = 65537;
-  *(fourth->array) = 89340;
-  bignum* res2 = mul(third, fourth);
-  // 5855075580
-  assert(res2->array[0] == 1560108285);
-  assert(res2->array[1] == 1);
+  //test 1
+    bignum *first = new_bignum(2);
+    bignum *second = new_bignum(1);
+    *(first->array + 0) = 1234;
+    *(first->array + 1) = 1;
+    *(second->array + 0) = 129;
+    bignum *res1 = mul(first, second);
+    //8589937060
+    assert(res1->array[0] == 2468);
+    assert(res1->array[1] == 2);
+
+    //test 2
+    bignum *third = new_bignum(1);
+    bignum *fourth = new_bignum(1);
+    *(third->array) = 65537;
+    *(fourth->array) = 89340;
+    bignum *res2 = mul(third, fourth);
+    //5855075580
+    assert(res2->array[0] == 1560108285);
+    assert(res2->array[1] == 1);
 
   /* bignum *b = new_bignum(sizeof(elem_size_t) * numItems);
   b->size = numItems;
@@ -181,8 +185,10 @@ bignum* add(bignum* xn, bignum* xnp1) {
     if (tmp == NULL) {
       fprintf(stderr, "Couldn't reallocate memory for a carry in sum");
       exit(1);
+
     } else {
       res->array = tmp;
+      free(tmp);
       res->size += 1;
       *(res->array + i) = carry;
     }
@@ -238,12 +244,15 @@ bignum* mul(bignum* xn, bignum* xnp1) {
   uint64_t size1 = xn->size;
   uint64_t size2 = xnp1->size;
 
-  if (xn->size == 0 || xnp1->size == 0) {
-    bignum* res = malloc(sizeof(*xn));
-    res->size = 0;
-    return res;
-  } else if (size1 > 1 || size2 > 1) {
+  if (size1 > 1 || size2 > 1) {
     uint64_t aNewSize = size1 / 2;
+    bignum* a = malloc(sizeof(*a));
+    if (a == NULL) {
+      fprintf(stderr, "Couldn't allocate memory for a in mul");
+      exit(1);
+    }
+    a->size = aNewSize;
+    a->array = xn->array;
     uint64_t bNewSize = size1 - aNewSize;
     bignum* b = malloc(sizeof(*b));
     if (b == NULL) {
@@ -251,89 +260,73 @@ bignum* mul(bignum* xn, bignum* xnp1) {
       exit(1);
     }
     b->size = bNewSize;
-    b->array = xn->array;
-
-    bignum* a = malloc(sizeof(*a));
-    if (a == NULL) {
-      fprintf(stderr, "Couldn't allocate memory for a in mul");
-      exit(1);
-    }
-    a->size = aNewSize;
-    a->array = xn->array + bNewSize;
+    b->array = xn->array + aNewSize;
 
     uint64_t cNewSize = size2 / 2;
-    uint64_t dNewSize = size2 - cNewSize;
     bignum* c = malloc(sizeof(*c));
     if (c == NULL) {
       fprintf(stderr, "Couldn't allocate memory for c in mul");
       exit(1);
     }
     c->size = cNewSize;
-    c->array = xnp1->array + dNewSize;
-
+    c->array = xnp1->array;
+    uint64_t dNewSize = size2 - cNewSize;
     bignum* d = malloc(sizeof(*d));
     if (d == NULL) {
       fprintf(stderr, "Couldn't allocate memory for d in mul");
       exit(1);
     }
     d->size = dNewSize;
-    d->array = xnp1->array;
+    d->array = xnp1->array + dNewSize;
+
     bignum* ac = mul(a, c);
     bignum* bd = mul(b, d);
     bignum* a_add_b = add(a, b);
     bignum* c_add_d = add(c, d);
-
+    free(a);
+    free(b);
+    free(c);
+    free(d);
     bignum* abcd = mul(a_add_b, c_add_d);
     free(a_add_b);
     free(c_add_d);
     bignum* abcd_sub_ac = sub(abcd, ac);
     bignum* ad_add_bc = sub(abcd_sub_ac, bd);
-    free(a);
-    free(b);
-    free(c);
-    free(d);
-    if (ac->size != 0) {
-      elem_size_t* tmp =
-          realloc(ac->array, sizeof(elem_size_t) * (ac->size + 2));
-      if (tmp == NULL) {
-        fprintf(stderr, "Couldn't reallocate memory for a shift in sum");
-        exit(1);
-      } else {
-        ac->array = tmp;
-        ac->size += 2;
-        for (int i = ad_add_bc->size - 1; i > 1; i--) {
-          *(ad_add_bc->array + i) = *(ad_add_bc->array + i - 2);
-        }
-        *(ad_add_bc->array) = 0;
-        *(ad_add_bc->array + 1) = 0;
-      }
-    }
-    if (ad_add_bc->size != 0) {
-      elem_size_t* tmp = realloc(ad_add_bc->array,
-                                 sizeof(elem_size_t) * (ad_add_bc->size + 1));
-      if (tmp == NULL) {
-        fprintf(stderr, "Couldn't allocate memory for a zero shift in sum");
-        exit(1);
-      } else {
-        ad_add_bc->array = tmp;
-        ad_add_bc->size += 1;
 
-        for (int i = ad_add_bc->size - 1; i > 0; i--) {
-          *(ad_add_bc->array + i) = *(ad_add_bc->array + i - 1);
-        }
-        *(ad_add_bc->array) = 0;
-      }
+    // TODO rewrite it here
+     /*bignum* ac_shift =
+    realloc(ac, sizeof(*ac) + sizeof(elem_size_t) * (ac->size + 2));*/
+
+    elem_size_t* tmp = realloc(ac->array, sizeof(elem_size_t) * (ac->size + 2));
+    if (tmp == NULL) {
+      fprintf(stderr, "Couldn't reallocate memory for a shift in sum");
+      exit(1);
+    } else {
+      ac->array = tmp;
+      free(tmp);
+      ac->size += 2;
     }
-    bignum* res = add(add(ac, ad_add_bc), bd);
+    tmp =
+        realloc(ad_add_bc->array, sizeof(elem_size_t) * (ad_add_bc->size + 1));
+    if (tmp == NULL) {
+      fprintf(stderr, "Couldn't reallocate memory for a shift in sum");
+      exit(1);
+    } else {
+      ad_add_bc->array = tmp;
+      free(tmp);
+      ad_add_bc->size += 1;
+    }
+     /*bignum* ad_add_bc_shift =
+        realloc(ad_add_bc,
+            sizeof(*ad_add_bc) + sizeof(elem_size_t) * (ad_add_bc->size + 1));*/
+    bignum* res = add(add(ac_shift, ad_add_bc_shift), bd);
     free(abcd);
     free(abcd_sub_ac);
     free(ad_add_bc);
-    int i = res->size - 1;
-    while (*(res->array + i) == 0) {
-      i--;
-      res->size = res->size - 1;
-    }
-
+    return res;
+  } else if (xn->size == 0 || xnp1->size == 0) {
+    bignum* res = malloc(sizeof(*xn));
+    res->size = 0;
     return res;
   } else {
     return mul2num(*(xn->array), *(xnp1->array));
@@ -347,43 +340,97 @@ bignum* mul(bignum* xn, bignum* xnp1) {
  */
 
 bignum* mul2num(elem_size_t x, elem_size_t y) {
-  if (x == 0 || y == 0) {
-    bignum* res = malloc(sizeof(*res));
-    res->size = 0;
+  size_t shift_size = N / 2;
+  elem_size_t a = x >> shift_size;
+  elem_size_t b = (x << shift_size) >> shift_size;
+  elem_size_t c = y >> shift_size;
+  elem_size_t d = (y << shift_size) >> shift_size;
+  bignum ac;
+  ac.size = 2;
+  elem_size_t ac_array[] = {0, a * c};
+  ac.array = ac_array;
+
+  bignum ad;
+  ad.size = 2;
+  elem_size_t ad_array[] = {(a * d << shift_size) >> shift_size,
+                            (a * d) >> shift_size};
+  ad.array = ad_array;
+
+  bignum bc;
+  bc.size = 2;
+  elem_size_t bc_array[] = {(b * c << shift_size) >> shift_size,
+                            (b * c) >> shift_size};
+  bc.array = bc_array;
+
+  bignum bd;
+  bd.size = 1;
+  elem_size_t bd_array[] = {b * d};
+  bd.array = bd_array;
+  bignum* ac_add_ad = add(&ac, &ad);
+  bignum* ac_add_ad_add_bc = add(ac_add_ad, &bc);
+  free(ac_add_ad);
+  bignum* res = add(ac_add_ad_add_bc, &bd);
+  free(ac_add_ad_add_bc);
+
+  return res;
+}
+/**
+ *
+ * Divide big number xn by big number xnp1.
+ *
+ */
+
+
+bignum* div2bignums(bignum* xn, bignum* xnp1) {
+    bignum* res = new_bignum(xnp1->size);
+    bignum temp;
+    bignum row;
+    for (long i=xn->size - 1; i>=0; i--) {
+        digit_shift(&row,1);
+        row.array[0] = xn->array[i];
+        res->array[i] = 0;
+        while (compare_bignum(&row,xnp1) != 1) {
+            res->array[i]++;
+            temp = *(sub(&row,xnp1));
+            row = temp;
+        }
+    }
+    zero_justify(res);
     return res;
-  } else {
-    size_t shift_size = N / 2;
-    elem_size_t a = x >> shift_size;
-    elem_size_t b = (x << shift_size) >> shift_size;
-    elem_size_t c = y >> shift_size;
-    elem_size_t d = (y << shift_size) >> shift_size;
-    bignum ac;
-    ac.size = 2;
-    elem_size_t ac_array[] = {0, a * c};
+}
 
-    ac.array = ac_array;
+int compare_bignum(bignum* xn, bignum* xnp1) {
+    if (xn->size > xnp1->size) {
+        return -1;
+    }
+    else if (xnp1->size > xn->size) {
+        return 1;
+    }
+    for (long i = xnp1->size - 1; i >= 0; i--) {
+        if (xn->array[i] > xnp1->array[i]) {
+            return -1;
+        }
+        if (xn->array[i] < xnp1->array[i]) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
-    bignum ad;
-    ad.size = 2;
-    elem_size_t ad_array[] = {((a * d) << shift_size), (a * d) >> shift_size};
-    ad.array = ad_array;
+void digit_shift(bignum* n, int count) {
+    long i;
+    if ((n->size == 1) && (n->array[0] == 0)) return;
 
-    bignum bc;
-    bc.size = 2;
-    elem_size_t bc_array[] = {(b * c) << shift_size, (b * c) >> shift_size};
-    bc.array = bc_array;
+    for (i = n->size; i>=0; i--)
+        n->array[i+count] = n->array[i];
 
-    bignum bd;
-    bd.size = 1;
-    elem_size_t bd_array[] = {b * d};
-    bd.array = bd_array;
-    bignum* ac_add_ad = add(&ac, &ad);
-    bignum* ac_add_ad_add_bc = add(ac_add_ad, &bc);
-    free(ac_add_ad);
-    bignum* res = add(ac_add_ad_add_bc, &bd);
+    for (i = 0; i < count; i++) n->array[i] = 0;
+    n->size = n->size + count;
+}
 
-    return res;
-  }
+void zero_justify(bignum* n) {
+    while ((n->size > 0) && (n->array[n->size - 1] == 0))
+        n->size--;
 }
 /* void sqrt2(uint64_t n, bignum *xn, bignum *xnp1)
 {
