@@ -72,9 +72,9 @@ int main(int argc, char** argv) {
     *(first->array + 1) = 1;
     *(second->array + 0) = 129;
     bignum *res1 = mul(first, second);
-    //8589937060
-    assert(res1->array[0] == 2468);
-    assert(res1->array[1] == 2);
+    //554050940370
+    assert(res1->array[0] == 159315);
+    assert(res1->array[1] == 129);
 
     //test 2
     bignum *third = new_bignum(1);
