@@ -89,7 +89,7 @@ int main(int argc, char** argv) {
     for (int i = res2-> size - 1; i >= 0; i--) {
         printf("%u\n", res2->array[i]);
     }
-    assert(res2->array[0] == 1560108285);
+    assert(res2->array[0] == 1560108284);
     assert(res2->array[1] == 1);
 
   /* bignum *b = new_bignum(sizeof(elem_size_t) * numItems);
