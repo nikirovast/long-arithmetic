@@ -73,7 +73,10 @@ int main(int argc, char** argv) {
     *(second->array + 0) = 129;
     bignum *res1 = mul(first, second);
     //554050940370
-    assert(res1->array[0] == 159315);
+    for (int i = res1-> size - 1; i >= 0; i--) {
+        printf("%u\n", res1->array[i]);
+    }
+    assert(res1->array[0] == 159186);
     assert(res1->array[1] == 129);
 
     //test 2
@@ -83,6 +86,9 @@ int main(int argc, char** argv) {
     *(fourth->array) = 89340;
     bignum *res2 = mul(third, fourth);
     //5855075580
+    for (int i = res2-> size - 1; i >= 0; i--) {
+        printf("%u\n", res2->array[i]);
+    }
     assert(res2->array[0] == 1560108285);
     assert(res2->array[1] == 1);
 
