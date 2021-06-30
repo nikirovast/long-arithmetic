@@ -21,7 +21,7 @@ struct bignum {
 extern void sum(uint64_t n, bignum* xn, bignum* xnp1);
 bignum* mul(bignum* xn, bignum* xnp1);
 void zero_justify(bignum* n);
-void digit_shift(bignum* n, int count);
+void array_shift(bignum* n, int count);
 int compare_bignum(bignum* xn, bignum* xnp1);
 bignum* div2bignums(bignum* xn, bignum* xnp1);
 // void sqrt2(uint64_t n, bignum *xn, bignum *xnp1);#
@@ -30,7 +30,7 @@ bignum* sub(bignum* xn, bignum* xnp1);
 bignum* mul2num(elem_size_t x, elem_size_t y);
 
 bignum* new_bignum(size_t size) {
-  bignum* res = malloc(sizeof(bignum));
+    bignum* res = malloc(sizeof(bignum)) ;
   if (res == NULL) {
     fprintf(stderr, "Couldn't allocate memory for a struct");
     exit(1);
@@ -46,26 +46,26 @@ bignum* new_bignum(size_t size) {
 
 // in VSCode 1st is in RCX, 2nd in RDX, 3rd in R8
 int main(int argc, char** argv) {
-  // Yulia for tests
+    // Yulia for tests
 
-  bignum *a = new_bignum(2);
-  bignum *b = new_bignum(1);
-  *(a->array + 0) = 4294967295;
-  *(a->array + 1) = 1;
-  *(b->array + 0) = 4294967295;
-    printf("%u, %u, %u", a->array[0], a->array[1], b-> array[0]);
-  bignum *res = mul(a, b);
+    bignum *a = new_bignum(2);
+    bignum *b = new_bignum(1);
+    *(a->array + 0) = 4294967295;
+    *(a->array + 1) = 1;
+    *(b->array + 0) = 4294967295;
+    printf("%u, %u, %u", a->array[0], a->array[1], b->array[0]);
+    bignum *res = mul(a, b);
 
-  uint64_t s = res->size;
+    uint64_t s = res->size;
 
     printf("\n");
-    printf("Size: %lu\n",res->size);
-  for (int i = res-> size - 1; i >= 0; i--) {
-      printf("%u\n", res->array[i]);
-  }
+    printf("Size: %lu\n", res->size);
+    for (int i = res->size - 1; i >= 0; i--) {
+        printf("%u\n", res->array[i]);
+    }
 
 
-  //test 1
+    //test mul1
     bignum *first = new_bignum(2);
     bignum *second = new_bignum(1);
     *(first->array + 0) = 1234;
@@ -73,24 +73,39 @@ int main(int argc, char** argv) {
     *(second->array + 0) = 129;
     bignum *res1 = mul(first, second);
     //554050940370
-    for (int i = res1-> size - 1; i >= 0; i--) {
+    for (int i = res1->size - 1; i >= 0; i--) {
         printf("%u\n", res1->array[i]);
     }
     assert(res1->array[0] == 159186);
     assert(res1->array[1] == 129);
 
-    //test 2
+    //test mul2
     bignum *third = new_bignum(1);
     bignum *fourth = new_bignum(1);
     *(third->array) = 65537;
     *(fourth->array) = 89340;
     bignum *res2 = mul(third, fourth);
     //5855075580
-    for (int i = res2-> size - 1; i >= 0; i--) {
+    for (int i = res2->size - 1; i >= 0; i--) {
         printf("%u\n", res2->array[i]);
     }
     assert(res2->array[0] == 1560108284);
     assert(res2->array[1] == 1);
+
+    //test div1
+    bignum *divisor = new_bignum(2);
+    bignum *dividend = new_bignum(1);
+    *(divisor->array) = 90000;
+    *(divisor->array + 1) = 1;
+    *(dividend->array) = 7500;
+    bignum  *res3 = div2bignums(divisor, dividend);
+    printf("Result of division: \n");
+    printf("Size: %lu\n", res3->size);
+    for (long i = res3->size - 1; i >= 0; i--) {
+        printf("%u\n", res3->array[i]);
+    }
+    return 0;
+}
 
   /* bignum *b = new_bignum(sizeof(elem_size_t) * numItems);
   b->size = numItems;
@@ -100,7 +115,7 @@ int main(int argc, char** argv) {
    */
 
   // implement parsing of arguments, size = 5 as example
-  if (argc != 3) {
+  /*if (argc != 3) {
     fprintf(stderr,
             "usage: %s <number of iterations> <decimal (d) or hexadecimal (x) "
             "output>\n",
@@ -154,6 +169,7 @@ int main(int argc, char** argv) {
   }
   return 0;
 }
+   */
 
 /**
  *
@@ -428,20 +444,22 @@ bignum *mul2num(elem_size_t x, elem_size_t y)
 
 
 bignum* div2bignums(bignum* xn, bignum* xnp1) {
-    bignum* res = new_bignum(xnp1->size);
-    bignum temp;
-    bignum row;
+    size_t size = xn->size;
+    bignum* res = new_bignum(size);
+    bignum* row = new_bignum(size);
+    row->size = 1;
     for (long i=xn->size - 1; i>=0; i--) {
-        digit_shift(&row,1);
-        row.array[0] = xn->array[i];
+        array_shift(row,1);
+        row->array[0] = xn->array[i];
         res->array[i] = 0;
-        while (compare_bignum(&row,xnp1) != 1) {
+        while (compare_bignum(row,xnp1) < 1) {
             res->array[i]++;
-            temp = *(sub(&row,xnp1));
-            row = temp;
+            row = sub(row,xnp1);
+            zero_justify(row);
         }
     }
     zero_justify(res);
+    free(row);
     return res;
 }
 
@@ -463,19 +481,20 @@ int compare_bignum(bignum* xn, bignum* xnp1) {
     return 0;
 }
 
-void digit_shift(bignum* n, int count) {
+void array_shift(bignum* n, int count) {
     long i;
+    n = realloc(n, n->size + (count * sizeof(size_t)));
     if ((n->size == 1) && (n->array[0] == 0)) return;
 
-    for (i = n->size; i>=0; i--)
+    for (i = n->size - 1; i>=0; i--)
         n->array[i+count] = n->array[i];
 
-    for (i = 0; i < count; i++) n->array[i] = 0;
+    for (i = 0; i < count; i++) *(n->array + i) = 0;
     n->size = n->size + count;
 }
 
 void zero_justify(bignum* n) {
-    while ((n->size > 0) && (n->array[n->size - 1] == 0))
+    while ((n->size > 1) && (n->array[n->size - 1] == 0))
         n->size--;
 }
 /* void sqrt2(uint64_t n, bignum *xn, bignum *xnp1)
