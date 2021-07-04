@@ -17,17 +17,79 @@
 \maketitle
 
 \section{Einleitung}
-Die vorliegende Arbeit beschäftigt sich mit dem Algorithmus der schnellen Exponentiation von Matrizen von großen Zahlen und seine Anwendung auf die iterative Berechnung die Konstante  $\sqrt{2}$ mit der beliebigen vom Benutzer wählbaren Genauigkeit. Zu diesem Zweck wurde eine Methode zur Speicherung langer Zahlen und zur effizienten Durchführung mathematischer Operationen auf ihnen entwickelt und die Anzahl der Operationen, die zum Erreichen einer bestimmten Genauigkeit erforderlich sind, mathematisch abgeschätzt.   
-
-
+Die vorliegende Arbeit beschäftigt sich mit dem Algorithmus der schnellen Exponentiation von Matrizen von großen Zahlen und seine Anwendung auf die iterative Berechnung die Konstante  \(\sqrt{2}\) mit der beliebigen vom Benutzer wählbaren Genauigkeit. Zu diesem Zweck wurde eine Methode zur Speicherung langer Zahlen und zur effizienten Durchführung mathematischer Operationen auf ihnen entwickelt und die Anzahl der Operationen, die zum Erreichen einer bestimmten Genauigkeit erforderlich sind, mathematisch abgeschätzt.
 \section{Lösungsansatz}
 
 
-% TODO: Je nach Aufgabenstellung einen der Begriffe wählen
 \section{Genauigkeit}
+Wie in der Einleitung oben erwähnt, gehen wir davon aus, dass der Benutzer über die Konsole eingeben kann, mit welcher Genauigkeit er das Ergebnis haben möchte. Wir haben uns dafür entschieden, dass in unserem Fall die Anzahl der korrekten Nachkommastellen eine angemessene Genauigkeit ist. Daher werden wir im Folgenden die Argumentation für die Schätzung der Anzahl der Iterationen demonstrieren, die erforderlich sind, um eine bestimmte Genauigkeit zu erreichen.\\ 
+\\Zuerst kann gezeigt werden, dass der n-te Term unserer Rekursion wie folgt aussieht:
+\begin{equation}\label{eq:nthNum}
+\frac{1}{2\sqrt{2}}((1+\sqrt{2})^n-(1-\sqrt{2})^n)
+\end{equation}
+Dann kann unsere Approximation an die Wurzel im n-ten Schritt wie folgt umgeschrieben werden:
+\begin{equation}\label{eq:nthNumSqrt}
+1+\frac{((1+\sqrt{2})^n-(1-\sqrt{2})^n)}{((1+\sqrt{2})^{n+1})-(1-\sqrt{2})^{n+1})}
+\end{equation}
+Und wir wollen ein geeignetes minimales $\emph{n}$ finden, damit der Modul der Differenz aus unserer Konstante und der Approximation (\ref{eq:nthNumSqrt}) ein vorgegebenes $\varepsilon$ nicht überschreitet. Das heißt folgendes ist erfüllt:
+\begin{equation}\label{eq:errAprx}
+|\sqrt{2}-1-\frac{((1+\sqrt{2})^n-(1-\sqrt{2})^n)}{((1+\sqrt{2})^{n+1})-(1-\sqrt{2})^{n+1})}|<\varepsilon
+\end{equation}
+Nach der Umwandelung sollte Folgendes gelten:
+\begin{equation*}\label{eq:error2} 
+\begin{cases} 
+(\sqrt{2}-1)^n\cdot(4-2a+\varepsilon\cdot(a-1)<\varepsilon\cdot(1+\sqrt{2})^{n+1}
+\\ (1-\sqrt{2})^n\cdot(4-2a-\varepsilon\cdot(a-1)<\varepsilon\cdot(1+\sqrt{2})^{n+1}
+\end{cases}
+\end{equation*}
+Für gerades n ist erfüllt:
+\begin{equation}\label{eq:errorLog} 
+\begin{cases} 
+n>\frac{log_2{(4-2\sqrt{2}-\varepsilon\cdot(\sqrt{2}-1))}-log_2{(1+\sqrt{2})}-log_2{\varepsilon}}{\log_2{(1+\sqrt{2})-\log_2{(\sqrt{2}-1)}}}
+\\ n>\frac{log_2{(4-2\sqrt{2}+\varepsilon\cdot(\sqrt{2}-1))}-log_2{(1+\sqrt{2})}-log_2{\varepsilon}}{\log_2{(1+\sqrt{2})-\log_2{(\sqrt{2}-1)}}}
+\end{cases}
+\end{equation}
+Der Nenner kann umgerechnet werden:
+\begin{equation}\label{eq:denominator} 
+\log_2{(1+\sqrt{2})}-\log_2{(\sqrt{2}-1)}=\log_2{(1+\sqrt{2})^2}=2\cdot\log_2{(1+\sqrt{2})}
+\end{equation}
+Nach \(\log_2{x}\leq x\) gilt es immer:
+\begin{equation*}\label{eq:logx} 
+log_2{(4-2\sqrt{2}+\varepsilon\cdot(\sqrt{2}-1))} - log_2{(4-2\sqrt{2})}<\varepsilon\cdot\frac{\sqrt{2}-1}{4-2\sqrt{2}}
+\end{equation*}
+D.h. gilt es für \(\varepsilon<1\):
+\begin{equation}\label{eq:firstNum} 
+log_2{(4-2\sqrt{2}+\varepsilon\cdot(\sqrt{2}-1))} < log_2{(4-2\sqrt{2})}+1
+\end{equation}
+Ähnlich für den zweiten Term:
+\begin{equation}\label{eq:secondNum} 
+log_2{(4-2\sqrt{2}-\varepsilon\cdot(\sqrt{2}-1))} < log_2{(4-2\sqrt{2})}+1
+\end{equation}
+Entsprechend erhalten wir aus (\ref{eq:denominator}), (\ref{eq:firstNum}), (\ref{eq:secondNum}) für den gesamten Ausdruck (\ref{eq:errorLog}):
+\begin{equation}\label{eq:errorAprx} 
+n>\frac{log_2{(4-2\sqrt{2})}-\log_2{\varepsilon}}{2\cdot\log_2{(1+\sqrt{2})}}
+\end{equation}
+Diese Formel (\ref{eq:errorAprx}) kann durch Schätzungen weiter vereinfacht werden:
+\begin{equation*}\label{eq:errorAprxEasy} 
+n>1+\frac{1}{2\cdot\log_2{\frac{1}{\varepsilon}}}
+\end{equation*}
+Und für unsere Bequemlichkeit:
+\begin{equation*}
+n>1+\frac{1}{2}\cdot\log_2{10}\cdot\log_{10}{\frac{1}{\varepsilon}}
+\end{equation*}
+\begin{equation*}
+\log_2{10}\approx3.3
+\end{equation*}
+\begin{equation}\label{eq:finalAproximation}
+n = \lceil 1+1.65\cdot\log_{10}{\frac{1}{\varepsilon}}\rceil
+\end{equation}
+Das Schöne an dieser Formel (\ref{eq:finalAproximation}) ist, dass wir den Logarithmus nicht rechnen müssen, weil wir stattdessen gleich die Anzahl der Nachkommastellen einsetzen können.
+
+
 
 
 \section{Performanzanalyse}
+
 
 
 \section{Zusammenfassung und Ausblick}
