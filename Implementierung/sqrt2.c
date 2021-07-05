@@ -1,6 +1,3 @@
-//
-// Created by Andrey Manucharyan on 20.06.21.
-//
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -55,7 +52,6 @@ struct matrix {
 
 // in VSCode 1st is in RCX, 2nd in RDX, 3rd in R8
 int main(int argc, char** argv) {
-    // Yulia for tests
 
     bignum *a = new_bignum(2);
     bignum *b = new_bignum(1);
