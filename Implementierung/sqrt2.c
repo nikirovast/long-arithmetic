@@ -7,11 +7,13 @@
 #include <string.h>
 #include "errno.h"
 #include "assert.h"
+#include "time.h"
 
 #define N 32
 #define ELEM_SIZE_MAX UINT32_MAX
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
+typedef struct matrix matrix;
 
 struct bignum {
   size_t size;
@@ -28,6 +30,7 @@ bignum* div2bignums(bignum* xn, bignum* xnp1);
 bignum* add(bignum* xn, bignum* xnp1);
 bignum* sub(bignum* xn, bignum* xnp1);
 bignum* mul2num(elem_size_t x, elem_size_t y);
+matrix* matrixMultiplication(matrix* matrix1, matrix* matrix2);
 
 bignum* new_bignum(size_t size) {
     bignum* res = malloc(sizeof(bignum)) ;
@@ -43,6 +46,12 @@ bignum* new_bignum(size_t size) {
   }
   return res;
 }
+
+struct matrix {
+    bignum* xn;
+    bignum* xnp1;
+    bignum* xnm1;
+};
 
 // in VSCode 1st is in RCX, 2nd in RDX, 3rd in R8
 int main(int argc, char** argv) {
@@ -104,6 +113,23 @@ int main(int argc, char** argv) {
     for (long i = res3->size - 1; i >= 0; i--) {
         printf("%u\n", res3->array[i]);
     }
+
+    struct matrix *matrix = malloc(3 * sizeof(bignum));
+    matrix->xnp1 = new_bignum(1);
+    matrix->xnp1->array[0] = 29;
+    matrix->xn = new_bignum(1);
+    matrix->xn->array[0] = 12;
+    matrix->xnm1 = new_bignum(1);
+    matrix->xnm1->array[0] = 5;
+    struct matrix *matrix2 = malloc(3 * sizeof (bignum));
+    matrix2->xnp1 = new_bignum(1);
+    matrix2->xnp1->array[0] = 29;
+    matrix2->xn = new_bignum(1);
+    matrix2->xn->array[0] = 12;
+    matrix2->xnm1 = new_bignum(1);
+    matrix2->xnm1->array[0] = 5;
+    struct matrix *res4 = matrixMultiplication(matrix, matrix2);
+    printf("End matrix: %u, %u, %u", res4->xnm1->array[0], res4->xn->array[0], res4->xnp1->array[0]);
     return 0;
 }
 
@@ -170,6 +196,28 @@ int main(int argc, char** argv) {
   return 0;
 }
    */
+
+/**
+ *
+ * Multiply two matrices.
+ *
+ */
+
+  matrix* matrixMultiplication(matrix* matrix1, matrix* matrix2) {
+      matrix* res = malloc(2 * sizeof(*matrix2));
+      res->xnm1 = add(mul(matrix1->xnm1, matrix2->xnm1), mul(matrix1->xn, matrix2->xn));
+      res->xn = add(mul(matrix1->xnm1, matrix2->xn), mul(matrix1->xn, matrix2->xnp1));
+      res->xnp1 = add(mul(matrix1->xn, matrix2->xn), mul(matrix1->xnp1, matrix2->xnp1));
+      free(matrix1->xn);
+      free(matrix1->xnp1);
+      free(matrix1->xnm1);
+      free(matrix2->xn);
+      free(matrix2->xnp1);
+      free(matrix2->xnm1);
+      free(matrix1);
+      free(matrix2);
+      return res;
+  }
 
 /**
  *
