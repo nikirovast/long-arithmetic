@@ -222,6 +222,12 @@ matrix* matrixMultiplication(matrix* matrix1, matrix* matrix2) {
   return res;
 }
 
+/**
+ *
+ * Binary exponentiation of the matrix to the exponent n as described in pdf
+ *
+ */
+
 matrix* matrixBinaryExponentiation(matrix* matrix, unsigned long long n, int highestBit) {
     struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
     matrixInitial->xnm1 = new_bignum(1);
