@@ -204,6 +204,9 @@ int main(int argc, char** argv) {
       res->xnm1 = add(mul(matrix1->xnm1, matrix2->xnm1), mul(matrix1->xn, matrix2->xn));
       res->xn = add(mul(matrix1->xnm1, matrix2->xn), mul(matrix1->xn, matrix2->xnp1));
       res->xnp1 = add(mul(matrix1->xn, matrix2->xn), mul(matrix1->xnp1, matrix2->xnp1));
+      zero_justify(res->xnm1);
+      zero_justify(res->xn);
+      zero_justify(res->xnp1);
       free(matrix1->xn);
       free(matrix1->xnp1);
       free(matrix1->xnm1);
@@ -416,12 +419,7 @@ bignum *mul(bignum *xn, bignum *xnp1)
         free(abcd);
         free(abcd_sub_ac);
         free(ad_add_bc);
-        int i = res->size - 1;
-        while (*(res->array + i) == 0)
-        {
-            i--;
-            res->size = res->size - 1;
-        }
+        zero_justify(res);
 
         return res;
     }
