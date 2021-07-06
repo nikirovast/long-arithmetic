@@ -236,6 +236,10 @@ matrix* matrixBinaryExponentiation(matrix* matrix, unsigned long long n, int hig
             matrix = matrixMultiplication(matrix, matrixInitial);
         }
     }
+    free(matrixInitial->xn);
+    free(matrixInitial->xnm1);
+    free(matrixInitial->xnp1);
+    free(matrixInitial);
     return matrix;
 }
 
