@@ -9,7 +9,6 @@
 
 #define N 32
 #define ELEM_SIZE_MAX UINT32_MAX
-#define log2_10 = 3.3;
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
@@ -31,6 +30,7 @@ bignum* sub(bignum* xn, bignum* xnp1);
 bignum* mul2num(elem_size_t x, elem_size_t y);
 matrix* matrixMultiplication(matrix* matrix1, matrix* matrix2);
 long convertAccToN(long numDigits);
+char* hexPrint(bignum* a);
 
 bignum* new_bignum(size_t size) {
   bignum* res = malloc(sizeof(bignum));
@@ -55,12 +55,13 @@ struct matrix {
 
 // in VSCode 1st is in RCX, 2nd in RDX, 3rd in R8
 int main(int argc, char** argv) {
-  printf(convertAccToN(10));
+  printf("%i", convertAccToN(10));
   bignum* a = new_bignum(2);
   bignum* b = new_bignum(1);
   *(a->array + 0) = 4294967295;
   *(a->array + 1) = 1;
   *(b->array + 0) = 4294967295;
+  char* r = hexPrint(a);
   printf("%u, %u, %u", a->array[0], a->array[1], b->array[0]);
   bignum* res = mul(a, b);
 
@@ -200,6 +201,10 @@ return 0;
 
 matrix* matrixMultiplication(matrix* matrix1, matrix* matrix2) {
   matrix* res = malloc(2 * sizeof(*matrix2));
+  if (res == 0) {
+    fprintf(stderr, "Couldn't allocate memory for a matrix in matrixMul");
+    exit(1);
+  }
   res->xnm1 =
       add(mul(matrix1->xnm1, matrix2->xnm1), mul(matrix1->xn, matrix2->xn));
   res->xn =
@@ -256,7 +261,6 @@ bignum* add(bignum* xn, bignum* xnp1) {
     if (tmp == NULL) {
       fprintf(stderr, "Couldn't reallocate memory for a carry in sum");
       exit(1);
-
     } else {
       res->array = tmp;
       free(tmp);
@@ -317,6 +321,10 @@ bignum* mul(bignum* xn, bignum* xnp1) {
 
   if (xn->size == 0 || xnp1->size == 0) {
     bignum* res = malloc(sizeof(*xn));
+    if (res == 0) {
+      fprintf(stderr, "Couldn't allocate memory for a zero res in mul");
+      exit(1);
+    }
     res->size = 0;
     return res;
   } else if (size1 > 1 || size2 > 1) {
@@ -422,6 +430,10 @@ bignum* mul(bignum* xn, bignum* xnp1) {
 bignum* mul2num(elem_size_t x, elem_size_t y) {
   if (x == 0 || y == 0) {
     bignum* res = malloc(sizeof(*res));
+    if (res == 0) {
+      fprintf(stderr, "Couldn't allocate memory for a zero res in mul");
+      exit(1);
+    }
     res->size = 0;
     return res;
   } else {
@@ -504,7 +516,14 @@ int compare_bignum(bignum* xn, bignum* xnp1) {
 
 void array_shift(bignum* n, int count) {
   long i;
-  n = realloc(n, n->size + (count * sizeof(size_t)));
+  elem_size_t* tmp = realloc(n, n->size + (count * sizeof(size_t)));
+  ;
+  if (tmp == NULL) {
+    fprintf(stderr, "Couldn't reallocate memory for a n in arrayShift");
+    exit(1);
+  } else {
+    n = tmp;
+  }
   if ((n->size == 1) && (n->array[0] == 0))
     return;
 
@@ -528,7 +547,49 @@ void zero_justify(bignum* n) {
  */
 
 long convertAccToN(long numDigits) {
+  const double log2_10 = 3.3;
   return ceil(1 + log2_10 * (numDigits / 2));
+}
+
+char* hexPrint(bignum* a) {
+  int count = a->size;
+  int numCharinOneElem = N / 4;
+  int len = count * numCharinOneElem;
+  count--;
+  elem_size_t* array = a->array;
+
+  // TODO
+  // char odd = *(bytes + count) <= 0xf;
+  // if (!odd)
+  //    len++;
+
+  char *string, *str;
+  if (!(str = string = malloc(len))) {
+    fprintf(stderr, "Couldn't allocate memory for a string in hexPrint");
+    exit(1);
+  }
+  // TODO
+  // if (odd)
+  //{
+  //    sprintf(string, "%x", *(bytes + count));
+  //    count--;
+  //    str++;
+  //}
+  for (; count >= 0; count--) {
+    unsigned char c = *(array + count);
+    if (c <= 0xf) {
+      sprintf(str, "000%x", c);
+    } else if (c <= 0xff) {
+      sprintf(str, "00%x", c);
+    } else if (c <= 0xfff) {
+      sprintf(str, "0%x", c);
+    } else {
+      sprintf(str, "%x", c);
+    }
+    str += 4;
+  }
+  *str = '\0';
+  return string;
 }
 
 /* void sqrt2(uint64_t n, bignum *xn, bignum *xnp1)
