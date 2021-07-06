@@ -130,9 +130,9 @@ int main(int argc, char** argv) {
   matrix2->xn->array[0] = 12;
   matrix2->xnm1 = new_bignum(1);
   matrix2->xnm1->array[0] = 5;
-  int n = 8;
+  int n = 100000;
   struct matrix* res4;
-  res4 = matrixBinaryExponentiation(matrix, n, calculateHighestBit(8));
+  res4 = matrixBinaryExponentiation(matrix, n, calculateHighestBit(n));
   printf("End matrix: %u, %u, %u", res4->xnm1->array[0], res4->xn->array[0],
          res4->xnp1->array[0]);
   return 0;
