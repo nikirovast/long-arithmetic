@@ -9,6 +9,7 @@
 
 #define N 32
 #define ELEM_SIZE_MAX UINT32_MAX
+#define UINT_64_SIZE 64
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
@@ -29,6 +30,8 @@ bignum* add(bignum* xn, bignum* xnp1);
 bignum* sub(bignum* xn, bignum* xnp1);
 bignum* mul2num(elem_size_t x, elem_size_t y);
 matrix* matrixMultiplication(matrix* matrix1, matrix* matrix2);
+matrix* matrixBinaryExponentiation(matrix* matrix, unsigned long long n, int highestBit);
+int calculateHighestBit(unsigned long long n);
 long convertAccToN(long numDigits);
 char* hexPrint(bignum* a);
 
@@ -115,11 +118,11 @@ int main(int argc, char** argv) {
 
   struct matrix* matrix = malloc(3 * sizeof(bignum));
   matrix->xnp1 = new_bignum(1);
-  matrix->xnp1->array[0] = 29;
+  matrix->xnp1->array[0] = 2;
   matrix->xn = new_bignum(1);
-  matrix->xn->array[0] = 12;
+  matrix->xn->array[0] = 1;
   matrix->xnm1 = new_bignum(1);
-  matrix->xnm1->array[0] = 5;
+  matrix->xnm1->array[0] = 0;
   struct matrix* matrix2 = malloc(3 * sizeof(bignum));
   matrix2->xnp1 = new_bignum(1);
   matrix2->xnp1->array[0] = 29;
@@ -127,7 +130,9 @@ int main(int argc, char** argv) {
   matrix2->xn->array[0] = 12;
   matrix2->xnm1 = new_bignum(1);
   matrix2->xnm1->array[0] = 5;
-  struct matrix* res4 = matrixMultiplication(matrix, matrix2);
+  int n = 8;
+  struct matrix* res4;
+  res4 = matrixBinaryExponentiation(matrix, n, calculateHighestBit(8));
   printf("End matrix: %u, %u, %u", res4->xnm1->array[0], res4->xn->array[0],
          res4->xnp1->array[0]);
   return 0;
@@ -214,15 +219,40 @@ matrix* matrixMultiplication(matrix* matrix1, matrix* matrix2) {
   zero_justify(res->xnm1);
   zero_justify(res->xn);
   zero_justify(res->xnp1);
-  free(matrix1->xn);
-  free(matrix1->xnp1);
-  free(matrix1->xnm1);
-  free(matrix2->xn);
-  free(matrix2->xnp1);
-  free(matrix2->xnm1);
-  free(matrix1);
-  free(matrix2);
   return res;
+}
+
+matrix* matrixBinaryExponentiation(matrix* matrix, unsigned long long n, int highestBit) {
+    struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
+    matrixInitial->xnm1 = new_bignum(1);
+    *(matrixInitial->xnm1->array) = 0;
+    matrixInitial->xn = new_bignum(1);
+    *(matrixInitial->xn->array) = 1;
+    matrixInitial->xnp1 = new_bignum(1);
+    *(matrixInitial->xnp1->array) = 2;
+    for (int i = highestBit - 1; i >= 0; i--) {
+        matrix = matrixMultiplication(matrix, matrix);
+        if (n >> i & 1) {
+            matrix = matrixMultiplication(matrix, matrixInitial);
+        }
+    }
+    return matrix;
+}
+
+/**
+ *
+ * Calculate highest bit of the number
+ *
+ */
+
+int calculateHighestBit(unsigned long long n) {
+    int order = -1;
+    for (int i = 0; i < UINT_64_SIZE; i++){
+        if ((n>>i) & 1) {
+            order = i;
+        }
+    }
+    return order;
 }
 
 /**
