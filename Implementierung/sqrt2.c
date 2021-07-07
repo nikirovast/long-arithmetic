@@ -117,24 +117,21 @@ int main(int argc, char** argv) {
   }
 
   struct matrix* matrix = malloc(3 * sizeof(bignum));
+  if (matrix == NULL) {
+      fprintf(stderr, "Couldn't allocate memory for a matrix");
+      exit(1);
+  }
   matrix->xnp1 = new_bignum(1);
   matrix->xnp1->array[0] = 2;
   matrix->xn = new_bignum(1);
   matrix->xn->array[0] = 1;
   matrix->xnm1 = new_bignum(1);
   matrix->xnm1->array[0] = 0;
-  struct matrix* matrix2 = malloc(3 * sizeof(bignum));
-  matrix2->xnp1 = new_bignum(1);
-  matrix2->xnp1->array[0] = 29;
-  matrix2->xn = new_bignum(1);
-  matrix2->xn->array[0] = 12;
-  matrix2->xnm1 = new_bignum(1);
-  matrix2->xnm1->array[0] = 5;
-  int n = 100000;
+  int n = 1024;
   struct matrix* res4;
   res4 = matrixBinaryExponentiation(matrix, n, calculateHighestBit(n));
-  printf("End matrix: %u, %u, %u", res4->xnm1->array[0], res4->xn->array[0],
-         res4->xnp1->array[0]);
+  printf("End matrix: %u, %u, %u with size of xnp1 %lu", res4->xnm1->array[0], res4->xn->array[0],
+         res4->xnp1->array[0], res4->xnp1->size);
   return 0;
 }
 
@@ -395,6 +392,7 @@ bignum* mul(bignum* xn, bignum* xnp1) {
     }
     c->size = cNewSize;
     c->array = xnp1->array + dNewSize;
+    //memcpy(c->array, xnp1->array, xnp1->size * sizeof(unsigned long long));
 
     bignum* d = malloc(sizeof(*d));
     if (d == NULL) {
@@ -403,6 +401,7 @@ bignum* mul(bignum* xn, bignum* xnp1) {
     }
     d->size = dNewSize;
     d->array = xnp1->array;
+    //memcpy(d->array, xnp1->array, xnp1->size * sizeof(unsigned long long));
     bignum* ac = mul(a, c);
     bignum* bd = mul(b, d);
     bignum* a_add_b = add(a, b);
@@ -576,8 +575,9 @@ void array_shift(bignum* n, int count) {
 }
 
 void zero_justify(bignum* n) {
-  while ((n->size > 1) && (n->array[n->size - 1] == 0))
+    while ((n->size > 1) && (n->array[n->size - 1] == 0)) {
     n->size--;
+}
 }
 
 /**
