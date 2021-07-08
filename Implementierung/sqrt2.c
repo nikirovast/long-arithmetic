@@ -122,34 +122,35 @@ int main(int argc, char **argv)
     //  printf("%u\n", res3->array[i]);
     //}
 
-    // struct matrix *matrix = malloc(3 * sizeof(bignum));
-    // if (matrix == NULL)
-    //{
-    //    fprintf(stderr, "Couldn't allocate memory for a matrix");
-    //    exit(1);
-    //}
-    // matrix->xnp1 = new_bignum(1);
-    // matrix->xnp1->array[0] = 2;
-    // matrix->xn = new_bignum(1);
-    // matrix->xn->array[0] = 1;
-    // matrix->xnm1 = new_bignum(1);
-    // matrix->xnm1->array[0] = 0;
+    struct matrix *matrix = malloc(3 * sizeof(bignum));
+    if (matrix == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for a matrix");
+        exit(1);
+    }
+    matrix->xnp1 = new_bignum(1);
+    matrix->xnp1->array[0] = 2;
+    matrix->xn = new_bignum(1);
+    matrix->xn->array[0] = 1;
+    matrix->xnm1 = new_bignum(1);
+    matrix->xnm1->array[0] = 0;
 
-    // int n = 60;
-    // struct matrix *res4;
-    // int hb = calculateHighestBit(n);
-    // res4 = matrixBinaryExponentiation(matrix, n, hb);
-    // char *result = hexToPrint(res4->xn);
-    bignum *a = new_bignum(2);
-    bignum *b = new_bignum(2);
-    *(a->array) = 3521874100;
-    *(a->array + 1) = 2154513721;
-    //*a->array + 2) = 1774;
-    *(b->array) = 3521874100;
-    *(b->array + 1) = 2154513721;
-    //*(b->array + 2) = 1774;
-    bignum *res = mul(a, b);
-    char *result = hexToPrint(res);
+    int n = 100;
+    struct matrix *res4;
+    int hb = calculateHighestBit(n);
+    res4 = matrixBinaryExponentiation(matrix, n, hb);
+    char *result = hexToPrint(res4->xn);
+
+    // bignum *a = new_bignum(2);
+    // bignum *b = new_bignum(2);
+    //*(a->array) = 3521874100;
+    //*(a->array + 1) = 2154513721;
+    ////*a->array + 2) = 1774;
+    //*(b->array) = 3521874100;
+    //*(b->array + 1) = 2154513721;
+    ////*(b->array + 2) = 1774;
+    // bignum *res = mul(a, b);
+    // char *result = hexToPrint(res);
     // printf("End matrix: %u, %u, %u with size of xnp1 %lu",
     // res4->xnm1->array[0],
     //       res4->xn->array[0], res4->xnp1->array[0], res4->xnp1->size);
@@ -653,13 +654,29 @@ char *hexToPrint(bignum *a)
     elem_size_t first = *(array + count);
     if (first <= 0xf)
     {
-        len -= 3;
+        len -= 7;
     }
     else if (first <= 0xff)
     {
-        len -= 2;
+        len -= 6;
     }
     else if (first <= 0xfff)
+    {
+        len -= 5;
+    }
+    else if (first <= 0xffff)
+    {
+        len -= 4;
+    }
+    else if (first <= 0xfffff)
+    {
+        len -= 3;
+    }
+    else if (first <= 0xffffff)
+    {
+        len -= 2;
+    }
+    else if (first <= 0xfffffff)
     {
         len--;
     }
@@ -679,13 +696,29 @@ char *hexToPrint(bignum *a)
         elem_size_t c = *(array + count);
         if (c <= 0xf)
         {
-            sprintf(str, "000%x", c);
+            sprintf(str, "0000000%x", c);
         }
         else if (c <= 0xff)
         {
-            sprintf(str, "00%x", c);
+            sprintf(str, "000000%x", c);
         }
         else if (c <= 0xfff)
+        {
+            sprintf(str, "00000%x", c);
+        }
+        else if (c <= 0xffff)
+        {
+            sprintf(str, "0000%x", c);
+        }
+        else if (c <= 0xfffff)
+        {
+            sprintf(str, "000%x", c);
+        }
+        else if (c <= 0xffffff)
+        {
+            sprintf(str, "00%x", c);
+        }
+        else if (c <= 0xfffffff)
         {
             sprintf(str, "0%x", c);
         }
