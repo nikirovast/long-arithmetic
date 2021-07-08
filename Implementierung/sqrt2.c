@@ -6,11 +6,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #pragma warning(disable : 4996)
 
 #define N 32
 #define ELEM_SIZE_MAX UINT32_MAX
-#define UINT_64_SIZE 32
+
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
@@ -33,7 +34,7 @@ bignum *mul2num(elem_size_t x, elem_size_t y);
 matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2);
 matrix *matrixBinaryExponentiation(matrix *matrix, unsigned long long n, int highestBit);
 int calculateHighestBit(unsigned long long n);
-long convertAccToN(long numDigits);
+uint64_t convertAccToN(uint64_t numDigits);
 char *hexToPrint(bignum *a);
 
 bignum *new_bignum(size_t size)
@@ -225,7 +226,7 @@ matrix *matrixBinaryExponentiation(matrix *matrix, unsigned long long n, int hig
 int calculateHighestBit(unsigned long long n)
 {
     int order = -1;
-    for (int i = 0; i < UINT_64_SIZE; i++)
+    for (int i = 0; i < N; i++)
     {
         if ((n >> i) & 1)
         {
@@ -630,10 +631,10 @@ void zero_justify(bignum *n)
  *
  */
 
-long convertAccToN(long numDigits)
+uint64_t convertAccToN(uint64_t numDigits)
 {
     const double log2_10 = 1.65;
-    return ceil(1 + log2_10 * numDigits);
+    return (uint64_t)ceil(1 + log2_10 * numDigits);
 }
 
 /**
