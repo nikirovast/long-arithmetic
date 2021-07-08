@@ -372,26 +372,22 @@ bignum *mul(bignum *xn, bignum *xnp1)
         uint64_t aNewSize = size1 / 2;
         uint64_t bNewSize = size1 - aNewSize;
         bignum *b = new_bignum(bNewSize);
-        b->size = bNewSize;
         // we need to write in b the second part of xn
         // void *memcpy(void *dest, const void *src, std::size_t count);
         memcpy(b->array, xn->array, bNewSize * sizeof(elem_size_t));
         // b->array = xn->array;
 
         bignum *a = new_bignum(aNewSize);
-        a->size = aNewSize;
         memcpy(a->array, (xn->array + bNewSize), aNewSize * sizeof(elem_size_t));
         // a->array = xn->array + bNewSize;
 
         uint64_t cNewSize = size2 / 2;
         uint64_t dNewSize = size2 - cNewSize;
         bignum *c = new_bignum(cNewSize);
-        c->size = cNewSize;
         // c->array = xnp1->array + dNewSize;
         memcpy(c->array, (xnp1->array + dNewSize), cNewSize * sizeof(elem_size_t));
 
         bignum *d = new_bignum(dNewSize);
-        d->size = dNewSize;
         memcpy(d->array, xnp1->array, dNewSize * sizeof(elem_size_t));
         // d->array = xnp1->array;
         // memcpy(d->array, xnp1->array, xnp1->size * sizeof(unsigned long long));
