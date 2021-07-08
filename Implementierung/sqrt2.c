@@ -372,11 +372,6 @@ bignum *mul(bignum *xn, bignum *xnp1)
         uint64_t aNewSize = size1 / 2;
         uint64_t bNewSize = size1 - aNewSize;
         bignum *b = new_bignum(bNewSize);
-        if (b == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for b in mul");
-            exit(1);
-        }
         b->size = bNewSize;
         // we need to write in b the second part of xn
         // void *memcpy(void *dest, const void *src, std::size_t count);
@@ -384,12 +379,6 @@ bignum *mul(bignum *xn, bignum *xnp1)
         // b->array = xn->array;
 
         bignum *a = new_bignum(aNewSize);
-
-        if (a == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for a in mul");
-            exit(1);
-        }
         a->size = aNewSize;
         memcpy(a->array, (xn->array + bNewSize), aNewSize * sizeof(elem_size_t));
         // a->array = xn->array + bNewSize;
@@ -397,21 +386,11 @@ bignum *mul(bignum *xn, bignum *xnp1)
         uint64_t cNewSize = size2 / 2;
         uint64_t dNewSize = size2 - cNewSize;
         bignum *c = new_bignum(cNewSize);
-        if (c == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for c in mul");
-            exit(1);
-        }
         c->size = cNewSize;
         // c->array = xnp1->array + dNewSize;
         memcpy(c->array, (xnp1->array + dNewSize), cNewSize * sizeof(elem_size_t));
 
         bignum *d = new_bignum(dNewSize);
-        if (d == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for d in mul");
-            exit(1);
-        }
         d->size = dNewSize;
         memcpy(d->array, xnp1->array, dNewSize * sizeof(elem_size_t));
         // d->array = xnp1->array;
