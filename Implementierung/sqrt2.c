@@ -11,7 +11,9 @@
 
 #define N 32
 #define ELEM_SIZE_MAX UINT32_MAX
-
+#define LOG2_10 3.3
+#define LOG10_2 0.3
+#define POWER10_9 1000000000
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
@@ -27,7 +29,6 @@ void zero_justify(bignum *n);
 void array_shift(bignum *n, int count);
 int compare_bignum(bignum *xn, bignum *xnp1);
 bignum *div2bignums(bignum *xn, bignum *xnp1);
-// void sqrt2(uint64_t n, bignum *xn, bignum *xnp1);#
 bignum *add(bignum *xn, bignum *xnp1);
 bignum *sub(bignum *xn, bignum *xnp1);
 bignum *mul2num(elem_size_t x, elem_size_t y);
@@ -36,6 +37,7 @@ matrix *matrixBinaryExponentiation(matrix *matrix, unsigned long long n, int hig
 int calculateHighestBit(unsigned long long n);
 uint64_t convertAccToN(uint64_t numDigits);
 char *hexToPrint(bignum *a);
+char *decToPrint(bignum *a);
 
 bignum *new_bignum(size_t size)
 {
@@ -136,11 +138,18 @@ int main(int argc, char **argv)
     matrix->xnm1 = new_bignum(1);
     matrix->xnm1->array[0] = 0;
 
-    int n = 100;
+    int n = 30;
     struct matrix *res4;
-    int hb = calculateHighestBit(n);
-    res4 = matrixBinaryExponentiation(matrix, n, hb);
-    char *result = hexToPrint(res4->xn);
+    struct matrix *res5;
+    int op = convertAccToN(n);
+    res5 = matrixBinaryExponentiation(matrix, op, calculateHighestBit(op));
+    // array_shift(res5->xn, 1);
+    // res4 = div2bignums(res5->xn, res5->xnp1);
+    char *result = hexToPrint(res5->xn);
+    char *test2 = decToPrint(res5->xn);
+    // double result = (double)res5->xn->array[0] / (double)res5->xnp1->array[0];
+
+    // char *result = hexToPrint(res4->xn);
 
     // bignum *a = new_bignum(2);
     // bignum *b = new_bignum(2);
@@ -175,10 +184,6 @@ matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
     res->xnm1 = add(mul(matrix1->xnm1, matrix2->xnm1), mul(matrix1->xn, matrix2->xn));
     res->xn = add(mul(matrix1->xnm1, matrix2->xn), mul(matrix1->xn, matrix2->xnp1));
     res->xnp1 = add(mul(matrix1->xn, matrix2->xn), mul(matrix1->xnp1, matrix2->xnp1));
-    // useless
-    // zero_justify(res->xnm1);
-    // zero_justify(res->xn);
-    // zero_justify(res->xnp1);
     return res;
 }
 
@@ -372,22 +377,47 @@ bignum *mul(bignum *xn, bignum *xnp1)
         uint64_t aNewSize = size1 / 2;
         uint64_t bNewSize = size1 - aNewSize;
         bignum *b = new_bignum(bNewSize);
+        if (b == NULL)
+        {
+            fprintf(stderr, "Couldn't allocate memory for b in mul");
+            exit(1);
+        }
+        b->size = bNewSize;
         // we need to write in b the second part of xn
         // void *memcpy(void *dest, const void *src, std::size_t count);
         memcpy(b->array, xn->array, bNewSize * sizeof(elem_size_t));
         // b->array = xn->array;
 
         bignum *a = new_bignum(aNewSize);
+
+        if (a == NULL)
+        {
+            fprintf(stderr, "Couldn't allocate memory for a in mul");
+            exit(1);
+        }
+        a->size = aNewSize;
         memcpy(a->array, (xn->array + bNewSize), aNewSize * sizeof(elem_size_t));
         // a->array = xn->array + bNewSize;
 
         uint64_t cNewSize = size2 / 2;
         uint64_t dNewSize = size2 - cNewSize;
         bignum *c = new_bignum(cNewSize);
+        if (c == NULL)
+        {
+            fprintf(stderr, "Couldn't allocate memory for c in mul");
+            exit(1);
+        }
+        c->size = cNewSize;
         // c->array = xnp1->array + dNewSize;
         memcpy(c->array, (xnp1->array + dNewSize), cNewSize * sizeof(elem_size_t));
 
         bignum *d = new_bignum(dNewSize);
+        if (d == NULL)
+        {
+            fprintf(stderr, "Couldn't allocate memory for d in mul");
+            exit(1);
+        }
+        d->size = dNewSize;
         memcpy(d->array, xnp1->array, dNewSize * sizeof(elem_size_t));
         // d->array = xnp1->array;
         // memcpy(d->array, xnp1->array, xnp1->size * sizeof(unsigned long long));
@@ -570,7 +600,7 @@ int compare_bignum(bignum *xn, bignum *xnp1)
 void array_shift(bignum *n, int count)
 {
     long i;
-    elem_size_t *tmp = realloc(n, n->size + (count * sizeof(size_t)));
+    elem_size_t *tmp = realloc(n->array, count * sizeof(size_t));
     ;
     if (tmp == NULL)
     {
@@ -579,7 +609,7 @@ void array_shift(bignum *n, int count)
     }
     else
     {
-        n = tmp;
+        n->array = tmp;
     }
     if ((n->size == 1) && (n->array[0] == 0))
         return;
@@ -608,8 +638,7 @@ void zero_justify(bignum *n)
 
 uint64_t convertAccToN(uint64_t numDigits)
 {
-    const double log2_10 = 1.65;
-    return (uint64_t)ceil(1 + log2_10 * numDigits);
+    return (uint64_t)ceil(1 + (LOG2_10 / 2) * numDigits);
 }
 
 /**
@@ -620,7 +649,7 @@ uint64_t convertAccToN(uint64_t numDigits)
 
 char *hexToPrint(bignum *a)
 {
-    int count = a->size;
+    uint64_t count = a->size;
     int numCharinOneElem = N / 4;
     // One extra for a string terminator
     int len = count * numCharinOneElem + 1;
@@ -658,7 +687,8 @@ char *hexToPrint(bignum *a)
     }
 
     char *string, *str;
-    if (!(str = string = malloc(len)))
+    str = string = malloc(len);
+    if (string == NULL)
     {
         fprintf(stderr, "Couldn't allocate memory for a string in hexPrint");
         exit(1);
@@ -708,6 +738,160 @@ char *hexToPrint(bignum *a)
     return string;
 }
 
+void addToPrint(elem_size_t *decArray, int *size, elem_size_t summand)
+{
+    uint64_t tmp = summand;
+    for (int i = 0; i < *size; i++)
+    {
+        if (!tmp)
+            return;
+        *(decArray + i) = (tmp += *(decArray + i)) % POWER10_9;
+        tmp /= POWER10_9;
+    }
+    if (tmp)
+    {
+        *(decArray + *size) = tmp;
+        (*size)++;
+    }
+}
+
+void mulToPrint(elem_size_t *decArray, int *size)
+{
+    uint64_t tmp = 0;
+    for (int i = 0; i < *size; i++)
+    {
+        *(decArray + i) = (tmp += *(decArray + i) * (ELEM_SIZE_MAX + 1)) % POWER10_9;
+        tmp /= POWER10_9;
+    }
+    *(decArray + *size) = tmp % POWER10_9;
+    (*size)++;
+    tmp /= POWER10_9;
+    if (tmp)
+    {
+        *(decArray + *size) = tmp;
+        (*size)++;
+    }
+}
+
+char *decToPrint(bignum *a)
+{
+    int count = a->size;
+    int size = count * LOG10_2 * 32 / 9 + 1;
+    count--;
+    elem_size_t *decArray;
+    decArray = malloc(size * sizeof(elem_size_t));
+    if (decArray == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for decArray in decToPrint");
+        exit(1);
+    }
+    elem_size_t *bytes = a->array;
+    *decArray = 0;
+    size = 1;
+    uint64_t tmp = *(bytes + count);
+    if (tmp)
+    {
+        addToPrint(decArray, &size, tmp);
+    }
+
+    while (count--)
+    {
+        mulToPrint(decArray, &size);
+        tmp = *(bytes + count);
+        if (tmp)
+            addToPrint(decArray, &size, tmp);
+    }
+
+    tmp = *(decArray + size - 1);
+    char *string, *str;
+    int len = 9;
+    if (tmp < 10)
+    {
+        len = 1;
+    }
+    else if (tmp < 100)
+    {
+        len = 2;
+    }
+    else if (tmp < 1000)
+    {
+        len = 3;
+    }
+    else if (tmp < 10000)
+    {
+        len = 4;
+    }
+    else if (tmp < 100000)
+    {
+        len = 5;
+    }
+    else if (tmp < 1000000)
+    {
+        len = 6;
+    }
+    else if (tmp < 10000000)
+    {
+        len = 7;
+    }
+    else if (tmp < 100000000)
+    {
+        len = 8;
+    }
+    string = str = malloc(9 * size + len + 1);
+
+    if (string == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for string in decToPrint");
+        exit(1);
+    }
+    str += sprintf(str, "%d", tmp);
+    size--;
+    while (size--)
+    {
+        tmp = *(decArray + size);
+        if (tmp < 10)
+        {
+            sprintf(str, "00000000%d", tmp);
+        }
+        else if (tmp < 100)
+        {
+            sprintf(str, "0000000%d", tmp);
+        }
+        else if (tmp < 1000)
+        {
+            sprintf(str, "000000%d", tmp);
+        }
+        else if (tmp < 10000)
+        {
+            sprintf(str, "00000%d", tmp);
+        }
+        else if (tmp < 100000)
+        {
+            sprintf(str, "0000%d", tmp);
+        }
+        else if (tmp < 1000000)
+        {
+            sprintf(str, "000%d", tmp);
+        }
+        else if (tmp < 10000000)
+        {
+            sprintf(str, "00%d", tmp);
+        }
+        else if (tmp < 100000000)
+        {
+            sprintf(str, "0%d", tmp);
+        }
+        else
+        {
+            sprintf(str, "%d", tmp);
+        }
+
+        str += 9;
+    }
+    *str = '\0';
+    free(decArray);
+    return string;
+}
 /* void sqrt2(uint64_t n, bignum *xn, bignum *xnp1)
 {
 }*/
