@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 
 #pragma warning(disable : 4996)
 
@@ -65,8 +66,7 @@ struct matrix
 };
 
 // in VSCode 1st is in RCX, 2nd in RDX, 3rd in R8
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     // printf("%i", convertAccToN(10));
     // bignum* a = new_bignum(2);
     // bignum* b = new_bignum(1);
@@ -125,7 +125,7 @@ int main(int argc, char **argv)
     //  printf("%u\n", res3->array[i]);
     //}
 
-    struct matrix *matrix = malloc(3 * sizeof(bignum));
+    /*struct matrix *matrix = malloc(3 * sizeof(bignum));
     if (matrix == NULL)
     {
         fprintf(stderr, "Couldn't allocate memory for a matrix");
@@ -138,15 +138,16 @@ int main(int argc, char **argv)
     matrix->xnm1 = new_bignum(1);
     matrix->xnm1->array[0] = 0;
 
-    int n = 30;
+    int n = 20;
     struct matrix *res4;
     struct matrix *res5;
     int op = convertAccToN(n);
     res5 = matrixBinaryExponentiation(matrix, op, calculateHighestBit(op));
+     */
     // array_shift(res5->xn, 1);
     // res4 = div2bignums(res5->xn, res5->xnp1);
-    char *result = hexToPrint(res5->xn);
-    char *test2 = decToPrint(res5->xn);
+    //char *result = hexToPrint(res5->xn);
+    //char *test2 = decToPrint(res5->xn);
     // double result = (double)res5->xn->array[0] / (double)res5->xnp1->array[0];
 
     // char *result = hexToPrint(res4->xn);
@@ -164,6 +165,68 @@ int main(int argc, char **argv)
     // printf("End matrix: %u, %u, %u with size of xnp1 %lu",
     // res4->xnm1->array[0],
     //       res4->xn->array[0], res4->xnp1->array[0], res4->xnp1->size);
+    int hexadecimal = 0;
+    int c;
+    if (argc == 1 || argc > 3) {
+        fprintf(stderr, "Usage: %s <number of iterations> [-x] \n", argv[0]);
+        return 1;
+    }
+    while (optind < argc) {
+        c = getopt(argc, argv, "xh");
+        if (c == -1) {
+            optind++;
+        continue;
+    }
+        switch (c) {
+            case 'h': {
+                fprintf(stderr, "Usage: %s <number of iterations> [-x] \n", argv[0]);
+                return 1;
+            }
+            case 'x': {
+                hexadecimal = 1;
+            }
+            default: {
+                fprintf(stderr, "Unknown option was used");
+                exit(1);
+            }
+        }
+    }
+    uint64_t size = strtoull(argv[1], NULL, 0);
+    if (errno == ERANGE) {
+        fprintf(stderr, "the given number can not be represented, please pick a number < UINT64_MAX");
+        return 1;
+    }
+    if (size == 0ULL || *argv[1] == '-') {
+        fprintf(stderr, "invalid number of iterations: it should be > 0 or the given parameter was not a number");
+        return 1;
+    }
+    char *output = argv[2];
+    if ((*output != 'd' && *output != 'x') || strlen(output) > 1) {
+        fprintf(stderr, "invalid numeral system for output");
+        return 1;
+    }
+    struct bignum* xn = new_bignum(1); //size + 1 because of size parameter in the struct
+    if (xn == NULL) {
+        fprintf(stderr, "not enough memory for the given number of iterations: %llu", size);
+        return 1;
+    }
+    xn->size = 1;
+    xn->array[0] = 1;
+
+    struct bignum* xnp1 = new_bignum(1); //size + 1 because of size parameter in the struct
+    if (xnp1 == NULL) {
+        fprintf(stderr, "not enough memory for the given number of iterations: %llu", size);
+        return 1;
+    }
+    xnp1->size = 1;
+    xnp1->array[0] = 2;
+    printf("memory for xn and xnp1 successfully allocated, value in the first element of array with size %llu: xn is %u and xnp1 is %u.\n",size,  xn->array[0], xnp1->array[0]);
+    if (*output == 'd') {
+        printf("output numeral system is decimal");
+    }
+    else {
+        printf("output numeral system is hexadecimal");
+    }
     return 0;
 }
 
@@ -844,46 +907,46 @@ char *decToPrint(bignum *a)
         fprintf(stderr, "Couldn't allocate memory for string in decToPrint");
         exit(1);
     }
-    str += sprintf(str, "%d", tmp);
+    str += sprintf(str, "%llu", tmp);
     size--;
     while (size--)
     {
         tmp = *(decArray + size);
         if (tmp < 10)
         {
-            sprintf(str, "00000000%d", tmp);
+            sprintf(str, "00000000%llu", tmp);
         }
         else if (tmp < 100)
         {
-            sprintf(str, "0000000%d", tmp);
+            sprintf(str, "0000000%llu", tmp);
         }
         else if (tmp < 1000)
         {
-            sprintf(str, "000000%d", tmp);
+            sprintf(str, "000000%llu", tmp);
         }
         else if (tmp < 10000)
         {
-            sprintf(str, "00000%d", tmp);
+            sprintf(str, "00000%llu", tmp);
         }
         else if (tmp < 100000)
         {
-            sprintf(str, "0000%d", tmp);
+            sprintf(str, "0000%llu", tmp);
         }
         else if (tmp < 1000000)
         {
-            sprintf(str, "000%d", tmp);
+            sprintf(str, "000%llu", tmp);
         }
         else if (tmp < 10000000)
         {
-            sprintf(str, "00%d", tmp);
+            sprintf(str, "00%llu", tmp);
         }
         else if (tmp < 100000000)
         {
-            sprintf(str, "0%d", tmp);
+            sprintf(str, "0%llu", tmp);
         }
         else
         {
-            sprintf(str, "%d", tmp);
+            sprintf(str, "%llu", tmp);
         }
 
         str += 9;
