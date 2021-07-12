@@ -18,6 +18,9 @@
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
+static struct option long_options[] = {
+        {"help",     no_argument, 0,  'h' }
+};
 struct bignum
 {
     size_t size;
@@ -39,6 +42,7 @@ int calculateHighestBit(unsigned long long n);
 uint64_t convertAccToN(uint64_t numDigits);
 char *hexToPrint(bignum *a);
 char *decToPrint(bignum *a);
+void printUsage(char **argv);
 
 bignum *new_bignum(size_t size)
 {
@@ -168,22 +172,23 @@ int main(int argc, char **argv) {
     int hexadecimal = 0;
     int c;
     if (argc == 1 || argc > 3) {
-        fprintf(stderr, "Usage: %s <number of iterations> [-x] \n", argv[0]);
+        printUsage(argv);
         return 1;
     }
-    while (optind < argc) {
-        c = getopt(argc, argv, "xh");
+    while (1) {
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hx", long_options, &option_index);
         if (c == -1) {
-            optind++;
-        continue;
+            break;
     }
         switch (c) {
             case 'h': {
-                fprintf(stderr, "Usage: %s <number of iterations> [-x] \n", argv[0]);
+                printUsage(argv);
                 return 1;
             }
             case 'x': {
                 hexadecimal = 1;
+                break;
             }
             default: {
                 fprintf(stderr, "Unknown option was used");
@@ -191,41 +196,14 @@ int main(int argc, char **argv) {
             }
         }
     }
-    uint64_t size = strtoull(argv[1], NULL, 0);
+    uint64_t n = strtoull(argv[argc - 1], NULL, 0);
     if (errno == ERANGE) {
         fprintf(stderr, "the given number can not be represented, please pick a number < UINT64_MAX");
         return 1;
     }
-    if (size == 0ULL || *argv[1] == '-') {
+    if (n == 0ULL || *argv[1] == '-') {
         fprintf(stderr, "invalid number of iterations: it should be > 0 or the given parameter was not a number");
         return 1;
-    }
-    char *output = argv[2];
-    if ((*output != 'd' && *output != 'x') || strlen(output) > 1) {
-        fprintf(stderr, "invalid numeral system for output");
-        return 1;
-    }
-    struct bignum* xn = new_bignum(1); //size + 1 because of size parameter in the struct
-    if (xn == NULL) {
-        fprintf(stderr, "not enough memory for the given number of iterations: %llu", size);
-        return 1;
-    }
-    xn->size = 1;
-    xn->array[0] = 1;
-
-    struct bignum* xnp1 = new_bignum(1); //size + 1 because of size parameter in the struct
-    if (xnp1 == NULL) {
-        fprintf(stderr, "not enough memory for the given number of iterations: %llu", size);
-        return 1;
-    }
-    xnp1->size = 1;
-    xnp1->array[0] = 2;
-    printf("memory for xn and xnp1 successfully allocated, value in the first element of array with size %llu: xn is %u and xnp1 is %u.\n",size,  xn->array[0], xnp1->array[0]);
-    if (*output == 'd') {
-        printf("output numeral system is decimal");
-    }
-    else {
-        printf("output numeral system is hexadecimal");
     }
     return 0;
 }
@@ -235,6 +213,12 @@ int main(int argc, char **argv) {
  * Multiply two matrices.
  *
  */
+
+void printUsage(char **argv) {
+    printf("Usage: %s <number of iterations> \n", argv[0]);
+    printf("-x: sets output numeral system to hexadecimal, default: decimal\n");
+    printf("-h|--help: for usage help");
+}
 
 matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
 {
@@ -323,8 +307,7 @@ bignum *add(bignum *xn, bignum *xnp1)
 
     uint64_t size1 = xn->size;
     uint64_t size2 = xnp1->size;
-    bignum *res = new_bignum(sizeof(elem_size_t) * size2);
-    res->size = size2;
+    bignum *res = new_bignum(size2);
     int i;
     elem_size_t carry = 0;
     for (i = 0; i < size1; i++)
