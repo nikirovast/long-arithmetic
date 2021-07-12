@@ -655,7 +655,7 @@ int compare_bignum(bignum *xn, bignum *xnp1)
 void array_shift(bignum *n, int count)
 {
     long i;
-    elem_size_t *tmp = realloc(n->array, count * sizeof(elem_size_t));
+    elem_size_t *tmp = realloc(n->array, (n->size + count) * sizeof(elem_size_t));
     if (tmp == NULL)
     {
         fprintf(stderr, "Couldn't reallocate memory for a n in arrayShift");
@@ -703,98 +703,129 @@ uint64_t convertAccToN(uint64_t numDigits)
 
 char *hexToPrint(bignum *a)
 {
-    uint64_t count = a->size;
-    int numCharinOneElem = N / 4;
-    // One extra for a string terminator
-    int len = count * numCharinOneElem + 1;
-    count--;
-    elem_size_t *array = a->array;
+    if (a->size > 0)
+    {
 
-    elem_size_t first = *(array + count);
-    if (first <= 0xf)
-    {
-        len -= 7;
-    }
-    else if (first <= 0xff)
-    {
-        len -= 6;
-    }
-    else if (first <= 0xfff)
-    {
-        len -= 5;
-    }
-    else if (first <= 0xffff)
-    {
-        len -= 4;
-    }
-    else if (first <= 0xfffff)
-    {
-        len -= 3;
-    }
-    else if (first <= 0xffffff)
-    {
-        len -= 2;
-    }
-    else if (first <= 0xfffffff)
-    {
-        len--;
-    }
+        uint64_t count = a->size;
+        int numCharinOneElem = N / 4;
+        // One extra for a string terminator
+        uint64_t len = count * numCharinOneElem + 1;
+        count--;
+        elem_size_t *array = a->array;
 
-    char *string, *str;
-    str = string = malloc(len);
-    if (string == NULL)
-    {
-        fprintf(stderr, "Couldn't allocate memory for a string in hexPrint");
-        exit(1);
-    }
+        elem_size_t first = *(array + count);
+        int firstNum = 8;
+        if (first <= 0xf)
+        {
+            firstNum = 1;
+            len -= 7;
+        }
+        else if (first <= 0xff)
+        {
+            firstNum = 2;
+            len -= 6;
+        }
+        else if (first <= 0xfff)
+        {
+            firstNum = 3;
+            len -= 5;
+        }
+        else if (first <= 0xffff)
+        {
+            firstNum = 4;
+            len -= 4;
+        }
+        else if (first <= 0xfffff)
+        {
+            firstNum = 5;
+            len -= 3;
+        }
+        else if (first <= 0xffffff)
+        {
+            firstNum = 6;
+            len -= 2;
+        }
+        else if (first <= 0xfffffff)
+        {
+            firstNum = 7;
+            len--;
+        }
 
-    int k = sprintf_s(str, "%x", first);
-    str = str + k;
-    count--;
-    for (; count >= 0; count--)
-    {
-        elem_size_t c = *(array + count);
-        if (c <= 0xf)
+        char *string, *str;
+        str = string = malloc(len);
+        if (string == NULL)
         {
-            sprintf_s(str, "0000000%x", c);
+            fprintf(stderr, "Couldn't allocate memory for a string in hexPrint");
+            exit(1);
         }
-        else if (c <= 0xff)
+        sprintf_s(str, firstNum, "%x", first);
+        str += firstNum;
+        count--;
+        while (1)
         {
-            sprintf_s(str, "000000%x", c);
+            elem_size_t c = *(array + count);
+            if (c <= 0xf)
+            {
+                sprintf_s(str, 8, "0000000%x", c);
+            }
+            else if (c <= 0xff)
+            {
+                sprintf_s(str, 8, "000000%x", c);
+            }
+            else if (c <= 0xfff)
+            {
+                sprintf_s(str, 8, "00000%x", c);
+            }
+            else if (c <= 0xffff)
+            {
+                sprintf_s(str, 8, "0000%x", c);
+            }
+            else if (c <= 0xfffff)
+            {
+                sprintf_s(str, 8, "000%x", c);
+            }
+            else if (c <= 0xffffff)
+            {
+                sprintf_s(str, 8, "00%x", c);
+            }
+            else if (c <= 0xfffffff)
+            {
+                sprintf_s(str, 8, "0%x", c);
+            }
+            else
+            {
+                sprintf_s(str, 8, "%x", c);
+            }
+            str += numCharinOneElem;
+            if (count == 0)
+            {
+                break;
+            }
+            else
+            {
+                count--;
+            }
         }
-        else if (c <= 0xfff)
-        {
-            sprintf_s(str, "00000%x", c);
-        }
-        else if (c <= 0xffff)
-        {
-            sprintf_s(str, "0000%x", c);
-        }
-        else if (c <= 0xfffff)
-        {
-            sprintf_s(str, "000%x", c);
-        }
-        else if (c <= 0xffffff)
-        {
-            sprintf_s(str, "00%x", c);
-        }
-        else if (c <= 0xfffffff)
-        {
-            sprintf_s(str, "0%x", c);
-        }
-        else
-        {
-            sprintf_s(str, "%x", c);
-        }
-        str += numCharinOneElem;
+        *str = '\0';
+        return string;
     }
-    *str = '\0';
-    return string;
+    else
+    {
+        char *zero = malloc(2);
+        if (zero == NULL)
+        {
+            fprintf(stderr, "Couldn't allocate memory for a zerostring");
+            exit(1);
+        }
+        *zero = '0';
+        *(zero + 1) = 0;
+        return zero;
+    }
 }
 
-void addToPrint(elem_size_t *decArray, int *size, elem_size_t summand)
+void addToPrint(elem_size_t *decArray, uint64_t *size, elem_size_t summand)
 {
-    uint64_t tmp = summand;
+    elem_size_t tmp = summand;
     for (int i = 0; i < *size; i++)
     {
         if (!tmp)
@@ -809,12 +840,14 @@ void addToPrint(elem_size_t *decArray, int *size, elem_size_t summand)
     }
 }
 
-void mulToPrint(elem_size_t *decArray, int *size)
+void mulToPrint(elem_size_t *decArray, uint64_t *size)
 {
-    uint64_t tmp = 0;
+    elem_size_t tmp = 0;
+    uint64_t max = ELEM_SIZE_MAX;
+    max++;
     for (int i = 0; i < *size; i++)
     {
-        *(decArray + i) = (tmp += *(decArray + i) * (ELEM_SIZE_MAX + 1)) % POWER10_9;
+        *(decArray + i) = (tmp += *(decArray + i) * max) % POWER10_9;
         tmp /= POWER10_9;
     }
     *(decArray + *size) = tmp % POWER10_9;
@@ -829,122 +862,144 @@ void mulToPrint(elem_size_t *decArray, int *size)
 
 char *decToPrint(bignum *a)
 {
-    int count = a->size;
-    int size = count * LOG10_2 * 32 / 9 + 1;
-    count--;
-    elem_size_t *decArray;
-    decArray = malloc(size * sizeof(elem_size_t));
-    if (decArray == NULL)
-    {
-        fprintf(stderr, "Couldn't allocate memory for decArray in decToPrint");
-        exit(1);
-    }
-    elem_size_t *bytes = a->array;
-    *decArray = 0;
-    size = 1;
-    uint64_t tmp = *(bytes + count);
-    if (tmp)
-    {
-        addToPrint(decArray, &size, tmp);
-    }
 
-    while (count--)
+    uint64_t count = a->size;
+    if (count > 0)
     {
-        mulToPrint(decArray, &size);
-        tmp = *(bytes + count);
+
+        uint64_t size = count * LOG10_2 * 32 / 9 + 1;
+        count--;
+        elem_size_t *decArray;
+        decArray = malloc(size * sizeof(elem_size_t));
+        if (decArray == NULL)
+        {
+            fprintf(stderr, "Couldn't allocate memory for decArray in decToPrint");
+            exit(1);
+        }
+        elem_size_t *bytes = a->array;
+        *decArray = 0;
+        size = 1;
+        uint64_t tmp = *(bytes + count);
         if (tmp)
+        {
             addToPrint(decArray, &size, tmp);
-    }
+        }
 
-    tmp = *(decArray + size - 1);
-    char *string, *str;
-    int len = 9;
-    if (tmp < 10)
-    {
-        len = 1;
-    }
-    else if (tmp < 100)
-    {
-        len = 2;
-    }
-    else if (tmp < 1000)
-    {
-        len = 3;
-    }
-    else if (tmp < 10000)
-    {
-        len = 4;
-    }
-    else if (tmp < 100000)
-    {
-        len = 5;
-    }
-    else if (tmp < 1000000)
-    {
-        len = 6;
-    }
-    else if (tmp < 10000000)
-    {
-        len = 7;
-    }
-    else if (tmp < 100000000)
-    {
-        len = 8;
-    }
-    string = str = malloc(9 * size + len + 1);
+        while (count--)
+        {
+            mulToPrint(decArray, &size);
+            tmp = *(bytes + count);
+            if (tmp)
+            {
+                addToPrint(decArray, &size, tmp);
+            }
+        }
 
-    if (string == NULL)
-    {
-        fprintf(stderr, "Couldn't allocate memory for string in decToPrint");
-        exit(1);
-    }
-    str += sprintf_s(str, "%llu", tmp);
-    size--;
-    while (size--)
-    {
-        tmp = *(decArray + size);
+        tmp = *(decArray + size - 1);
+        char *string, *str;
+        int len = 9;
         if (tmp < 10)
         {
-            sprintf_s(str, "00000000%llu", tmp);
+            len = 1;
         }
         else if (tmp < 100)
         {
-            sprintf_s(str, "0000000%llu", tmp);
+            len = 2;
         }
         else if (tmp < 1000)
         {
-            sprintf_s(str, "000000%llu", tmp);
+            len = 3;
         }
         else if (tmp < 10000)
         {
-            sprintf_s(str, "00000%llu", tmp);
+            len = 4;
         }
         else if (tmp < 100000)
         {
-            sprintf_s(str, "0000%llu", tmp);
+            len = 5;
         }
         else if (tmp < 1000000)
         {
-            sprintf_s(str, "000%llu", tmp);
+            len = 6;
         }
         else if (tmp < 10000000)
         {
-            sprintf_s(str, "00%llu", tmp);
+            len = 7;
         }
         else if (tmp < 100000000)
         {
-            sprintf_s(str, "0%llu", tmp);
+            len = 8;
         }
-        else
-        {
-            sprintf_s(str, "%llu", tmp);
-        }
+        uint64_t notOF = size;
+        uint64_t max = 9 * notOF + len + 1;
+        string = str = malloc(max);
 
-        str += 9;
+        if (string == NULL)
+        {
+            fprintf(stderr, "Couldn't allocate memory for string in decToPrint");
+            exit(1);
+        }
+        sprintf_s(str, len, "%llu", tmp);
+        str += len;
+        size--;
+        while (size--)
+        {
+            tmp = *(decArray + size);
+            if (tmp < 10)
+            {
+                sprintf_s(str, 9, "00000000%llu", tmp);
+            }
+            else if (tmp < 100)
+            {
+                sprintf_s(str, 9, "0000000%llu", tmp);
+            }
+            else if (tmp < 1000)
+            {
+                sprintf_s(str, 9, "000000%llu", tmp);
+            }
+            else if (tmp < 10000)
+            {
+                sprintf_s(str, 9, "00000%llu", tmp);
+            }
+            else if (tmp < 100000)
+            {
+                sprintf_s(str, 9, "0000%llu", tmp);
+            }
+            else if (tmp < 1000000)
+            {
+                sprintf_s(str, 9, "000%llu", tmp);
+            }
+            else if (tmp < 10000000)
+            {
+                sprintf_s(str, 9, "00%llu", tmp);
+            }
+            else if (tmp < 100000000)
+            {
+                sprintf_s(str, 9, "0%llu", tmp);
+            }
+            else
+            {
+                sprintf_s(str, 9, "%llu", tmp);
+            }
+
+            str += 9;
+        }
+        *str = '\0';
+        free(decArray);
+        return string;
     }
-    *str = '\0';
-    free(decArray);
-    return string;
+    else
+    {
+        char *zero = malloc(2);
+        if (zero == NULL)
+        {
+            fprintf(stderr, "Couldn't allocate memory for a zerostring");
+            exit(1);
+        }
+        *zero = '0';
+        *(zero + 1) = 0;
+        return zero;
+    }
 }
 
 /**
