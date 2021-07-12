@@ -366,7 +366,7 @@ bignum *sub(bignum *xn, bignum *xnp1)
     {
         elem_size_t a = *(xn->array + i);
         elem_size_t b = *(xnp1->array + i);
-        if (a < 1 && (b > 0 || carry > 0) || a - carry < b)
+        if ((a < 1 && (b > 0 || carry > 0)) || a - carry < b)
         {
             *(res->array + i) = ELEM_SIZE_MAX - b - carry + a + 1;
             carry = 1;
