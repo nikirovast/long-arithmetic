@@ -764,7 +764,7 @@ char *hexToPrint(bignum *a)
         while (1)
         {
             elem_size_t c = *(array + count);
-            if (c <= 0xf)
+            /*if (c <= 0xf)
             {
                 snprintf(str, 8, "0000000%x", c);
             }
@@ -795,7 +795,8 @@ char *hexToPrint(bignum *a)
             else
             {
                 snprintf(str, 8, "%x", c);
-            }
+            }*/
+            snprintf(str, 8, "08%x", c);
             str += numCharinOneElem;
             if (count == 0)
             {
