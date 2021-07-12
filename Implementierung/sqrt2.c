@@ -758,7 +758,7 @@ char *hexToPrint(bignum *a)
             fprintf(stderr, "Couldn't allocate memory for a string in hexPrint");
             exit(1);
         }
-        sprintf_s(str, firstNum, "%x", first);
+        snprintf(str, firstNum, "%x", first);
         str += firstNum;
         count--;
         while (1)
@@ -766,35 +766,35 @@ char *hexToPrint(bignum *a)
             elem_size_t c = *(array + count);
             if (c <= 0xf)
             {
-                sprintf_s(str, 8, "0000000%x", c);
+                snprintf(str, 8, "0000000%x", c);
             }
             else if (c <= 0xff)
             {
-                sprintf_s(str, 8, "000000%x", c);
+                snprintf(str, 8, "000000%x", c);
             }
             else if (c <= 0xfff)
             {
-                sprintf_s(str, 8, "00000%x", c);
+                snprintf(str, 8, "00000%x", c);
             }
             else if (c <= 0xffff)
             {
-                sprintf_s(str, 8, "0000%x", c);
+                snprintf(str, 8, "0000%x", c);
             }
             else if (c <= 0xfffff)
             {
-                sprintf_s(str, 8, "000%x", c);
+                snprintf(str, 8, "000%x", c);
             }
             else if (c <= 0xffffff)
             {
-                sprintf_s(str, 8, "00%x", c);
+                snprintf(str, 8, "00%x", c);
             }
             else if (c <= 0xfffffff)
             {
-                sprintf_s(str, 8, "0%x", c);
+                snprintf(str, 8, "0%x", c);
             }
             else
             {
-                sprintf_s(str, 8, "%x", c);
+                snprintf(str, 8, "%x", c);
             }
             str += numCharinOneElem;
             if (count == 0)
@@ -939,7 +939,7 @@ char *decToPrint(bignum *a)
             fprintf(stderr, "Couldn't allocate memory for string in decToPrint");
             exit(1);
         }
-        sprintf_s(str, len, "%llu", tmp);
+        snprintf(str, len, "%llu", tmp);
         str += len;
         size--;
         while (size--)
@@ -947,39 +947,39 @@ char *decToPrint(bignum *a)
             tmp = *(decArray + size);
             if (tmp < 10)
             {
-                sprintf_s(str, 9, "00000000%llu", tmp);
+                snprintf(str, 9, "00000000%llu", tmp);
             }
             else if (tmp < 100)
             {
-                sprintf_s(str, 9, "0000000%llu", tmp);
+                snprintf(str, 9, "0000000%llu", tmp);
             }
             else if (tmp < 1000)
             {
-                sprintf_s(str, 9, "000000%llu", tmp);
+                snprintf(str, 9, "000000%llu", tmp);
             }
             else if (tmp < 10000)
             {
-                sprintf_s(str, 9, "00000%llu", tmp);
+                snprintf(str, 9, "00000%llu", tmp);
             }
             else if (tmp < 100000)
             {
-                sprintf_s(str, 9, "0000%llu", tmp);
+                snprintf(str, 9, "0000%llu", tmp);
             }
             else if (tmp < 1000000)
             {
-                sprintf_s(str, 9, "000%llu", tmp);
+                snprintf(str, 9, "000%llu", tmp);
             }
             else if (tmp < 10000000)
             {
-                sprintf_s(str, 9, "00%llu", tmp);
+                snprintf(str, 9, "00%llu", tmp);
             }
             else if (tmp < 100000000)
             {
-                sprintf_s(str, 9, "0%llu", tmp);
+                snprintf(str, 9, "0%llu", tmp);
             }
             else
             {
-                sprintf_s(str, 9, "%llu", tmp);
+                snprintf(str, 9, "%llu", tmp);
             }
 
             str += 9;
