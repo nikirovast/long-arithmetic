@@ -2,11 +2,11 @@
 #include "errno.h"
 #include "math.h"
 #include "time.h"
-#include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 
 #pragma warning(disable : 4996)
 
@@ -18,7 +18,10 @@
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
-static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
+static struct option long_options[] = {
+        {"help",     no_argument, 0,  'h' },
+        {0,0,0,0}
+};
 struct bignum
 {
     size_t size;
@@ -41,7 +44,6 @@ uint64_t convertAccToN(uint64_t numDigits);
 char *hexToPrint(bignum *a);
 char *decToPrint(bignum *a);
 void printUsage(char **argv);
-void freeBigNum(bignum *toFree);
 
 bignum *new_bignum(size_t size)
 {
@@ -69,8 +71,7 @@ struct matrix
 };
 
 // in VSCode 1st is in RCX, 2nd in RDX, 3rd in R8
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     // printf("%i", convertAccToN(10));
     // bignum* a = new_bignum(2);
     // bignum* b = new_bignum(1);
@@ -129,45 +130,46 @@ int main(int argc, char **argv)
     //  printf("%u\n", res3->array[i]);
     //}
 
-    // struct matrix *matrix = malloc(3 * sizeof(bignum));
-    // if (matrix == NULL)
-    //{
-    //    fprintf(stderr, "Couldn't allocate memory for a matrix");
-    //    exit(1);
-    //}
-    // matrix->xnp1 = new_bignum(1);
-    // matrix->xnp1->array[0] = 2;
-    // matrix->xn = new_bignum(1);
-    // matrix->xn->array[0] = 1;
-    // matrix->xnm1 = new_bignum(1);
-    // matrix->xnm1->array[0] = 0;
+    /*struct matrix *matrix = malloc(3 * sizeof(bignum));
+    if (matrix == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for a matrix");
+        exit(1);
+    }
+    matrix->xnp1 = new_bignum(1);
+    matrix->xnp1->array[0] = 2;
+    matrix->xn = new_bignum(1);
+    matrix->xn->array[0] = 1;
+    matrix->xnm1 = new_bignum(1);
+    matrix->xnm1->array[0] = 0;
 
-    // int n = 20;
-    // struct matrix *res4;
-    // struct matrix *res5;
-    // int op = convertAccToN(n);
-    // res5 = matrixBinaryExponentiation(matrix, op, calculateHighestBit(op));
+    int n = 20;
+    struct matrix *res4;
+    struct matrix *res5;
+    int op = convertAccToN(n);
+    res5 = matrixBinaryExponentiation(matrix, op, calculateHighestBit(op));
+     */
+    // array_shift(res5->xn, 1);
+    // res4 = div2bignums(res5->xn, res5->xnp1);
+    //char *result = hexToPrint(res5->xn);
+    //char *test2 = decToPrint(res5->xn);
+    // double result = (double)res5->xn->array[0] / (double)res5->xnp1->array[0];
 
-    array_shift(res5->xn, 1);
-    res4 = div2bignums(res5->xn, res5->xnp1);
-    char *result = hexToPrint(res5->xn);
-    char *test2 = decToPrint(res5->xn);
-    double result = (double)res5->xn->array[0] / (double)res5->xnp1->array[0];
+    // char *result = hexToPrint(res4->xn);
 
-    char *result = hexToPrint(res4->xn);
-
-    bignum *a = new_bignum(2);
-    bignum *b = new_bignum(2);
-    *(a->array) = 3521874100;
-    *(a->array + 1) = 2154513721;
-    //*a->array + 2) = 1774;
-    *(b->array) = 3521874100;
-    *(b->array + 1) = 2154513721;
-    //*(b->array + 2) = 1774;
-    bignum *res = mul(a, b);
-    char *result = hexToPrint(res);
-    printf("End matrix: %u, %u, %u with size of xnp1 %lu", res4->xnm1->array[0], res4->xn->array[0],
-           res4->xnp1->array[0], res4->xnp1->size);
+    // bignum *a = new_bignum(2);
+    // bignum *b = new_bignum(2);
+    //*(a->array) = 3521874100;
+    //*(a->array + 1) = 2154513721;
+    ////*a->array + 2) = 1774;
+    //*(b->array) = 3521874100;
+    //*(b->array + 1) = 2154513721;
+    ////*(b->array + 2) = 1774;
+    // bignum *res = mul(a, b);
+    // char *result = hexToPrint(res);
+    // printf("End matrix: %u, %u, %u with size of xnp1 %lu",
+    // res4->xnm1->array[0],
+    //       res4->xn->array[0], res4->xnp1->array[0], res4->xnp1->size);
     int hexadecimal = 0;
     int c;
     if (argc == 1 || argc > 3)
@@ -178,9 +180,8 @@ int main(int argc, char **argv)
     while (1)
     {
         int option_index = 0;
-        c = getopt_long(argc, argv, "-hx", long_options, &option_index);
-        if (c == -1)
-        {
+        c = getopt_long(argc, argv, "hx", long_options, &option_index);
+        if (c == -1) {
             break;
         }
         switch (c)
@@ -199,16 +200,37 @@ int main(int argc, char **argv)
         }
         }
     }
-    uint64_t n = strtoull(argv[1], NULL, 0);
+    uint64_t n = strtoull(argv[1 + hexadecimal], NULL, 0);
     if (errno == ERANGE)
     {
         fprintf(stderr, "the given number can not be represented, please pick a number < UINT64_MAX");
         return 1;
     }
-    if (n == 0ULL || *argv[1] == '-')
+    if (n == 0ULL || *argv[1 + hexadecimal] == '-')
     {
         fprintf(stderr, "invalid number of iterations: it should be > 0 or the given parameter was not a number");
         return 1;
+    }
+    struct matrix *matrix = malloc(3 * sizeof (struct bignum));
+    matrix->xn = new_bignum(1);
+    matrix->xn->array[0] = 1;
+    matrix->xnm1 = new_bignum(1);
+    matrix->xnm1->array[0] = 0;
+    matrix->xnp1 = new_bignum(1);
+    matrix->xnp1->array[0] = 2;
+    struct matrix *res5;
+    uint64_t op = convertAccToN(n);
+    bignum *help = new_bignum(2);
+    help->array[0] = 0b10100100110001101000000000000000;
+    help->array[1] = 0b111000110101111110;
+    res5 = matrixBinaryExponentiation(matrix, op, calculateHighestBit(op));
+    if (n < 15) {
+        double result = (double) res5->xn->array[0] / (double) res5->xnp1->array[0];
+        printf("Result of division after %llu operations: %.15f", op,result);
+    }
+    else {
+        bignum *res = div2bignums(mul(res5->xn, help), res5->xnp1);
+        printf("Result of division after %llu operations: %u", op, res->array[0]);
     }
     return 0;
 }
@@ -435,11 +457,10 @@ bignum *mul(bignum *xn, bignum *xnp1)
             exit(1);
         }
         b->size = bNewSize;
-
         // we need to write in b the second part of xn
         // void *memcpy(void *dest, const void *src, std::size_t count);
-        // memcpy(b->array, xn->array, bNewSize * sizeof(elem_size_t));
-        b->array = xn->array;
+        memcpy(b->array, xn->array, bNewSize * sizeof(elem_size_t));
+        // b->array = xn->array;
 
         bignum *a = new_bignum(aNewSize);
 
@@ -471,23 +492,23 @@ bignum *mul(bignum *xn, bignum *xnp1)
             exit(1);
         }
         d->size = dNewSize;
-        // memcpy(d->array, xnp1->array, dNewSize * sizeof(elem_size_t));
-        d->array = xnp1->array;
+        memcpy(d->array, xnp1->array, dNewSize * sizeof(elem_size_t));
+        // d->array = xnp1->array;
+        // memcpy(d->array, xnp1->array, xnp1->size * sizeof(unsigned long long));
         bignum *ac = mul(a, c);
         bignum *bd = mul(b, d);
         bignum *a_add_b = add(a, b);
         bignum *c_add_d = add(c, d);
-        freeBigNum(a);
-        freeBigNum(b);
-        freeBigNum(c);
-        freeBigNum(d);
+
         bignum *abcd = mul(a_add_b, c_add_d);
-        freeBigNum(a_add_b);
-        freeBigNum(c_add_d);
+        free(a_add_b);
+        free(c_add_d);
         bignum *abcd_sub_ac = sub(abcd, ac);
         bignum *ad_add_bc = sub(abcd_sub_ac, bd);
-        freeBigNum(ac);
-        freeBigNum(bd);
+        free(a);
+        free(b);
+        free(c);
+        free(d);
         if (ac->size != 0)
         {
             elem_size_t *tmp = realloc(ac->array, sizeof(elem_size_t) * (ac->size + 2));
@@ -529,9 +550,9 @@ bignum *mul(bignum *xn, bignum *xnp1)
             }
         }
         bignum *res = add(add(ac, ad_add_bc), bd);
-        freeBigNum(abcd);
-        freeBigNum(abcd_sub_ac);
-        freeBigNum(ad_add_bc);
+        free(abcd);
+        free(abcd_sub_ac);
+        free(ad_add_bc);
         zero_justify(res);
 
         return res;
@@ -590,9 +611,8 @@ bignum *mul2num(elem_size_t x, elem_size_t y)
         bd.array = bd_array;
         bignum *ac_add_ad = add(&ac, &ad);
         bignum *ac_add_ad_add_bc = add(ac_add_ad, &bc);
-        freeBigNum(ac_add_ad);
+        free(ac_add_ad);
         bignum *res = add(ac_add_ad_add_bc, &bd);
-        freeBigNum(ac_add_ad_add_bc);
         zero_justify(res);
         return res;
     }
@@ -623,7 +643,7 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
         }
     }
     zero_justify(res);
-    freeBigNum(row);
+    free(row);
     return res;
 }
 
@@ -654,8 +674,7 @@ int compare_bignum(bignum *xn, bignum *xnp1)
 void array_shift(bignum *n, int count)
 {
     long i;
-    elem_size_t *tmp = realloc(n->array, count * sizeof(size_t));
-    ;
+    elem_size_t *tmp = realloc(n->array, (count + n->size) * sizeof(elem_size_t));
     if (tmp == NULL)
     {
         fprintf(stderr, "Couldn't reallocate memory for a n in arrayShift");
@@ -692,7 +711,7 @@ void zero_justify(bignum *n)
 
 uint64_t convertAccToN(uint64_t numDigits)
 {
-    return 2 + (LOG2_10 / 2) * numDigits;
+    return (uint64_t)ceil(1 + (LOG2_10 / 2) * numDigits);
 }
 
 /**
