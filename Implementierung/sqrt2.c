@@ -19,7 +19,8 @@ typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
 static struct option long_options[] = {
-        {"help",     no_argument, 0,  'h' }
+        {"help",     no_argument, 0,  'h' },
+        {0,0,0,0}
 };
 struct bignum
 {
@@ -177,7 +178,7 @@ int main(int argc, char **argv) {
     }
     while (1) {
         int option_index = 0;
-        c = getopt_long(argc, argv, "hx", long_options, &option_index);
+        c = getopt_long(argc, argv, "-hx", long_options, &option_index);
         if (c == -1) {
             break;
     }
@@ -196,7 +197,7 @@ int main(int argc, char **argv) {
             }
         }
     }
-    uint64_t n = strtoull(argv[argc - 1], NULL, 0);
+    uint64_t n = strtoull(argv[1], NULL, 0);
     if (errno == ERANGE) {
         fprintf(stderr, "the given number can not be represented, please pick a number < UINT64_MAX");
         return 1;
