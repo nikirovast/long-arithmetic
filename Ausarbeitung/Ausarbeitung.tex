@@ -19,8 +19,32 @@
 \section{Einleitung}
 Die vorliegende Arbeit beschäftigt sich mit dem Algorithmus der schnellen Exponentiation von Matrizen von großen Zahlen und seine Anwendung auf die iterative Berechnung der Konstante  \(\sqrt{2}\) mit der beliebigen vom Benutzer wählbaren Genauigkeit. Zu diesem Zweck wurde eine Methode zur Speicherung langer Zahlen und zur effizienten Durchführung mathematischer Operationen auf diesen entwickelt und die Anzahl der Operationen, die zum Erreichen einer bestimmten Genauigkeit erforderlich sind, mathematisch abgeschätzt.
 \section{Lösungsansatz}
-
-
+\subsection{Überblick}%
+Die iterative Formel, die wir zur Berechnung der Konstante \(\sqrt{2}\) verwenden, lautet wie folgt:
+\begin{equation}\label{eq:iterativeSqrt2}
+\lim_{n \to \infty} {1+\frac{x_n}{x_{n+1}}} = \sqrt{2} 
+\end{equation}
+Wobei die $x_n$ und $x_{n+1}$ Terme lassen sich durch Exponentiation der Matrix
+$\begin{pmatrix}
+  0 & 1\\ 
+  1 & 2
+\end{pmatrix}$ bestimmen, das heißt:
+\begin{equation}\label{eq:matrixPower}
+{\begin{pmatrix}
+0 & 1\\
+1 & 2
+\end{pmatrix} }^n =
+{\begin{pmatrix}
+x_{n-1} & x_n \\
+x_n & x_{n+1}
+\end{pmatrix} }^n
+\end{equation}
+Und um (\ref{eq:matrixPower}) zu berechnen, verwenden wir die schnelle Exponentiation, die im Folgenden im Detail erläutern wird.
+\subsection{Warum die schnelle Exponentiation funktioniert}%
+darum
+\subsection{Die schnelle Exponentiation auf Matrizen}%
+\subsection{Die Struktur, die uns erlaubt, die Zahlen mit beliebiger Genauigkeit zu speichern}%
+\subsection{Addition und Multiplikation dieser Zahlen}%
 \section{Genauigkeit}
 Wie in der Einleitung oben erwähnt, gehen wir davon aus, dass der Benutzer über die Konsole eingeben kann, mit welcher Genauigkeit das Ergebnis ausgegeben werden sollte. Wir haben uns dafür entschieden, dass in unserem Fall die Anzahl der korrekten Nachkommastellen eine angemessene Genauigkeit ist. Daher werden wir im Folgenden die Argumentation für die Schätzung der Anzahl der Iterationen demonstrieren, die erforderlich sind, um eine bestimmte Genauigkeit zu erreichen.\\ 
 \\Zuerst kann gezeigt werden, dass der n-te Term unserer Rekursion wie folgt aussieht:
