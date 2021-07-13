@@ -46,6 +46,7 @@ bigNum *divideLongDivision(bigNum *dividend, bigNum *divisor);
 bigNum *bitShiftRight(bigNum *n, int count);
 bigNum *bitShiftLeft(bigNum *n, int count);
 bigNum *addIntToBigNum(bigNum *n, int toAdd);
+bigNum *copy (bigNum* from, int countBits);
 
 bigNum *new_bignum(size_t size)
 {
@@ -211,12 +212,12 @@ int main(int argc, char **argv) {
     }
     struct matrix *res5;
     uint64_t op = convertAccToN(n);
-    bigNum *help = new_bignum(1);
-    /*help->array[0] = 0b1100011000100000000000000000000;
+    bigNum *help = new_bignum(3);
+    help->array[0] = 0b1100011000100000000000000000000;
     help->array[1] = 0b1101011110001110101111000101101;
     help->array[2] = 0b101;
-     */
-    help->array[0] = 10;
+    //help->array[0] = 10;
+
     res5 = matrixBinaryExponentiation(op, calculateHighestBit(op));
 
     if (n < 1) {
@@ -227,13 +228,16 @@ int main(int argc, char **argv) {
 
         bigNum *helper = mul(res5->xn, help);
         //bigNum *res = div2bignums(helper, res5->xnp1);
-        /*bigNum* first = new_bignum(1);
+        /*bigNum* first = new_bignum(2);
         bigNum* second = new_bignum(1);
-        first->array[0] = 185;
-        second->array[0] = 13;
-        bigNum *res = divideLongDivision(first, second);
+        first->array[0] = 1;
+        first->array[1] = 1;
+        second->array[0] = 3;
+         */
+        /*bigNum *res = divideLongDivision(first, second);
          */
         bigNum *res = divideLongDivision(helper, res5->xnp1);
+        //divideLongDivision(first, second);
         printf("Result of division after %llu operations: %u\n", op , res->array[0]);
         printf("%u\n", res->array[1]);
         printf("%u", res->array[2]);
@@ -1009,11 +1013,8 @@ bigNum *divideLongDivision(bigNum *dividend, bigNum *divisor) {
     int highestBitDivisor = calculateHighestBit(divisor->array[divisor->size - 1]);
     uint64_t k = N * (dividend->size - 1) + highestBitDividend + 1;
     uint64_t l = N * (divisor->size - 1) + highestBitDivisor + 1;
-    bigNum *r = new_bignum(divisor->size);
     bigNum *d = new_bignum(divisor->size);
-    memcpy(r->array, divisor->array, sizeof(elem_size_t) * (divisor->size));
-    //clearing a bit according to long division algorithm
-    r->array[r->size-1] &= ~(1UL << highestBitDivisor);
+    bigNum* r = copy(dividend, l - 1);
     bigNum *q = new_bignum(dividend->size);
     bigNum *arrayTemp = new_bignum(r->size);
     for(int i = 0; i <= k - l; i++) {
@@ -1023,10 +1024,10 @@ bigNum *divideLongDivision(bigNum *dividend, bigNum *divisor) {
             bitInArray = highestBitDividend - (i + l - 1) % N;
         }
         else {
-            bitInArray = 31 - (i + l - 1) % N;
+            bitInArray = 32 - (i + l - 1) % N;
         }
         int alpha = dividend->array[arrayNumber] & (1<<bitInArray);
-        memcpy(arrayTemp->array, r->array, (r->size) * sizeof (elem_size_t));
+        memcpy(arrayTemp->array, r->array, (r->size + 1) * sizeof (elem_size_t));
         arrayTemp = bitShiftLeft(r, 1);
         d->array = arrayTemp->array;
         if (alpha > 0) {
@@ -1044,8 +1045,9 @@ bigNum *divideLongDivision(bigNum *dividend, bigNum *divisor) {
             q = addIntToBigNum(q, 1);
         }
     }
-    free(arrayTemp);
     printf("Quotient: %u and rest: %u\n", q->array[0], r->array[0]);
+    free(arrayTemp);
+    free(d);
     return q;
 }
 
@@ -1091,4 +1093,33 @@ bigNum *addIntToBigNum(bigNum *n, int toAdd) {
     bigNum *temp = new_bignum(1);
     temp->array[0] = toAdd;
     return add(n, temp);
+}
+
+bigNum *copy (bigNum* from, int countBits) {
+    int size = (countBits - 1) / N;
+    bigNum *res = new_bignum(size + 1);
+    int currentArrayFrom = from->size - 1;
+    int currentBitFrom = calculateHighestBit(from->array[from->size-1]);
+    int currentArraySet = (countBits - 1) / N;
+    int currentBitSet = (countBits - 1) % N;
+    for(int i = countBits - 1; i >= 0; i--) {
+        if (from->array[currentArrayFrom] & 1ULL<<currentBitFrom) {
+            res->array[currentArraySet] |= 1ULL<<currentBitSet;
+        }
+        if (currentBitFrom == 0) {
+            currentArrayFrom--;
+            currentBitFrom = 31;
+        }
+        else {
+            currentBitFrom--;
+        }
+        if (currentBitSet == 0) {
+            currentArraySet--;
+            currentBitSet = 31;
+        }
+        else {
+            currentBitSet--;
+        }
+    }
+    return res;
 }
