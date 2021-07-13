@@ -11,40 +11,45 @@
 #pragma warning(disable : 4996)
 
 #define N 32
+#define TWO_POW_31 2147483648
 #define ELEM_SIZE_MAX UINT32_MAX
 #define LOG2_10 3.3
 #define LOG10_2 0.3
 #define POWER10_9 1000000000
 typedef uint32_t elem_size_t;
-typedef struct bignum bignum;
+typedef struct bigNum bigNum;
 typedef struct matrix matrix;
 static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
-struct bignum
+struct bigNum
 {
     size_t size;
     elem_size_t *array;
 };
 
-extern void sum(uint64_t n, bignum *xn, bignum *xnp1);
-bignum *mul(bignum *xn, bignum *xnp1);
-void zero_justify(bignum *n);
-void array_shift(bignum *n, int count);
-int compare_bignum(bignum *xn, bignum *xnp1);
-bignum *div2bignums(bignum *xn, bignum *xnp1);
-bignum *add(bignum *xn, bignum *xnp1);
-bignum *sub(bignum *xn, bignum *xnp1);
-bignum *mul2num(elem_size_t x, elem_size_t y);
+extern void sum(uint64_t n, bigNum *xn, bigNum *xnp1);
+bigNum *mul(bigNum *xn, bigNum *xnp1);
+void zero_justify(bigNum *n);
+void array_shift(bigNum *n, int count);
+int compare_bignum(bigNum *xn, bigNum *xnp1);
+bigNum *div2bignums(bigNum *xn, bigNum *xnp1);
+bigNum *add(bigNum *xn, bigNum *xnp1);
+bigNum *sub(bigNum *xn, bigNum *xnp1);
+bigNum *mul2num(elem_size_t x, elem_size_t y);
 matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2);
 matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit);
 int calculateHighestBit(unsigned long long n);
 uint64_t convertAccToN(uint64_t numDigits);
-char *hexToPrint(bignum *a);
-char *decToPrint(bignum *a);
+char *hexToPrint(bigNum *a);
+char *decToPrint(bigNum *a);
 void printUsage(char **argv);
+bigNum *divideLongDivision(bigNum *dividend, bigNum *divisor);
+bigNum *bitShiftRight(bigNum *n, int count);
+bigNum *bitShiftLeft(bigNum *n, int count);
+bigNum *addIntToBigNum(bigNum *n, int toAdd);
 
-bignum *new_bignum(size_t size)
+bigNum *new_bignum(size_t size)
 {
-    bignum *res = malloc(sizeof(bignum));
+    bigNum *res = malloc(sizeof(bigNum));
     if (res == NULL)
     {
         fprintf(stderr, "Couldn't allocate memory for a struct");
@@ -62,22 +67,22 @@ bignum *new_bignum(size_t size)
 
 struct matrix
 {
-    bignum *xn;
-    bignum *xnp1;
-    bignum *xnm1;
+    bigNum *xn;
+    bigNum *xnp1;
+    bigNum *xnm1;
 };
 
 // in VSCode 1st is in RCX, 2nd in RDX, 3rd in R8
 int main(int argc, char **argv) {
     // printf("%i", convertAccToN(10));
-    // bignum* a = new_bignum(2);
-    // bignum* b = new_bignum(1);
+    // bigNum* a = new_bignum(2);
+    // bigNum* b = new_bignum(1);
     //*(a->array + 0) = 4294967295;
     //*(a->array + 1) = 1;
     //*(b->array + 0) = 4294967295;
     // char* r = hexPrint(a);
     // printf("%u, %u, %u", a->array[0], a->array[1], b->array[0]);
-    // bignum* res = mul(a, b);
+    // bigNum* res = mul(a, b);
 
     // uint64_t s = res->size;
 
@@ -88,12 +93,12 @@ int main(int argc, char **argv) {
     //}
 
     //// test mul1
-    // bignum* first = new_bignum(2);
-    // bignum* second = new_bignum(1);
+    // bigNum* first = new_bignum(2);
+    // bigNum* second = new_bignum(1);
     //*(first->array + 0) = 1234;
     //*(first->array + 1) = 1;
     //*(second->array + 0) = 129;
-    // bignum* res1 = mul(first, second);
+    // bigNum* res1 = mul(first, second);
     //// 554050940370
     // for (int i = res1->size - 1; i >= 0; i--) {
     //  printf("%u\n", res1->array[i]);
@@ -102,11 +107,11 @@ int main(int argc, char **argv) {
     // assert(res1->array[1] == 129);
 
     //// test mul2
-    // bignum* third = new_bignum(1);
-    // bignum* fourth = new_bignum(1);
+    // bigNum* third = new_bignum(1);
+    // bigNum* fourth = new_bignum(1);
     //*(third->array) = 65537;
     //*(fourth->array) = 89340;
-    // bignum* res2 = mul(third, fourth);
+    // bigNum* res2 = mul(third, fourth);
     //// 5855075580
     // for (int i = res2->size - 1; i >= 0; i--) {
     //  printf("%u\n", res2->array[i]);
@@ -115,19 +120,19 @@ int main(int argc, char **argv) {
     // assert(res2->array[1] == 1);
 
     //// test div1
-    // bignum* divisor = new_bignum(2);
-    // bignum* dividend = new_bignum(1);
+    // bigNum* divisor = new_bignum(2);
+    // bigNum* dividend = new_bignum(1);
     //*(divisor->array) = 90000;
     //*(divisor->array + 1) = 1;
     //*(dividend->array) = 7500;
-    // bignum* res3 = div2bignums(divisor, dividend);
+    // bigNum* res3 = div2bignums(divisor, dividend);
     // printf("Result of division: \n");
     // printf("Size: %lu\n", res3->size);
     // for (long i = res3->size - 1; i >= 0; i--) {
     //  printf("%u\n", res3->array[i]);
     //}
 
-    /*struct matrix *matrix = malloc(3 * sizeof(bignum));
+    /*struct matrix *matrix = malloc(3 * sizeof(bigNum));
     if (matrix == NULL)
     {
         fprintf(stderr, "Couldn't allocate memory for a matrix");
@@ -154,15 +159,15 @@ int main(int argc, char **argv) {
 
     // char *result = hexToPrint(res4->xn);
 
-    // bignum *a = new_bignum(2);
-    // bignum *b = new_bignum(2);
+    // bigNum *a = new_bignum(2);
+    // bigNum *b = new_bignum(2);
     //*(a->array) = 3521874100;
     //*(a->array + 1) = 2154513721;
     ////*a->array + 2) = 1774;
     //*(b->array) = 3521874100;
     //*(b->array + 1) = 2154513721;
     ////*(b->array + 2) = 1774;
-    // bignum *res = mul(a, b);
+    // bigNum *res = mul(a, b);
     // char *result = hexToPrint(res);
     // printf("End matrix: %u, %u, %u with size of xnp1 %lu",
     // res4->xnm1->array[0],
@@ -209,24 +214,32 @@ int main(int argc, char **argv) {
         fprintf(stderr, "invalid number of iterations: it should be > 0 or the given parameter was not a number");
         return 1;
     }
-    struct matrix *res5;
+    /*struct matrix *res5;
     uint64_t op = convertAccToN(n);
-    bignum *help = new_bignum(3);
+    bigNum *help = new_bignum(3);
     help->array[0] = 0b1100011000100000000000000000000;
     help->array[1] = 0b1101011110001110101111000101101;
     help->array[2] = 0b101;
+    //help->array[0] = 1000000000;
     res5 = matrixBinaryExponentiation(op, calculateHighestBit(op));
     if (n < 15) {
         double result = (double) res5->xn->array[0] / (double) res5->xnp1->array[0];
         printf("Result of division after %llu operations: %.15f", op,result);
     }
     else {
-        bignum *helper = mul(res5->xn, help);
-        bignum *res = div2bignums(helper, res5->xnp1);
-        printf("Result of division after %llu operations: %u\n", op, res->array[0]);
+     */
+
+        //bigNum *helper = mul(res5->xn, help);
+        //bigNum *res = div2bignums(helper, res5->xnp1);
+        bigNum *first = new_bignum(1);
+        bigNum *second = new_bignum(1);
+        first->array[0] = 185;
+        second->array[0] = 13;
+        bigNum *res = divideLongDivision(first, second);
+        /*printf("Result of division after 1 operations: %u\n", res->array[0]);
         printf("%u\n",res->array[1]);
         printf("%u",res->array[2]);
-    }
+         */
     return 0;
 }
 
@@ -265,14 +278,14 @@ matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
 
 matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit)
 {
-    struct matrix *matrix = malloc(3 * sizeof (struct bignum));
+    struct matrix *matrix = malloc(3 * sizeof (struct bigNum));
     matrix->xn = new_bignum(1);
     matrix->xn->array[0] = 1;
     matrix->xnm1 = new_bignum(1);
     matrix->xnm1->array[0] = 0;
     matrix->xnp1 = new_bignum(1);
     matrix->xnp1->array[0] = 2;
-    struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
+    struct matrix *matrixInitial = malloc(3 * sizeof(bigNum));
     if (matrixInitial == NULL)
     {
         fprintf(stderr, "Couldn't allocate memory for a matrix in matrixBinaryExp");
@@ -324,12 +337,12 @@ int calculateHighestBit(unsigned long long n)
  *
  */
 
-bignum *add(bignum *xn, bignum *xnp1)
+bigNum *add(bigNum *xn, bigNum *xnp1)
 {
     int flag = 0;
     if (xn->size > xnp1->size)
     {
-        bignum *tmp = xn;
+        bigNum *tmp = xn;
         xn = xnp1;
         xnp1 = tmp;
         flag = 1;
@@ -337,7 +350,7 @@ bignum *add(bignum *xn, bignum *xnp1)
 
     uint64_t size1 = xn->size;
     uint64_t size2 = xnp1->size;
-    bignum *res = new_bignum(size2);
+    bigNum *res = new_bignum(size2);
     int i;
     elem_size_t carry = 0;
     for (i = 0; i < size1; i++)
@@ -371,7 +384,7 @@ bignum *add(bignum *xn, bignum *xnp1)
     }
     if (flag != 0)
     {
-        bignum *tmp = xn;
+        bigNum *tmp = xn;
         xn = xnp1;
         xnp1 = tmp;
     }
@@ -384,11 +397,11 @@ bignum *add(bignum *xn, bignum *xnp1)
  *
  */
 
-bignum *sub(bignum *xn, bignum *xnp1)
+bigNum *sub(bigNum *xn, bigNum *xnp1)
 {
     uint64_t size1 = xn->size;
     uint64_t size2 = xnp1->size;
-    bignum *res = new_bignum(sizeof(elem_size_t) * size1);
+    bigNum *res = new_bignum(sizeof(elem_size_t) * size1);
     res->size = size1;
     int i;
     elem_size_t carry = 0;
@@ -432,14 +445,14 @@ bignum *sub(bignum *xn, bignum *xnp1)
  *
  */
 
-bignum *mul(bignum *xn, bignum *xnp1)
+bigNum *mul(bigNum *xn, bigNum *xnp1)
 {
     uint64_t size1 = xn->size;
     uint64_t size2 = xnp1->size;
 
     if (xn->size == 0 || xnp1->size == 0)
     {
-        bignum *res = malloc(sizeof(*xn));
+        bigNum *res = malloc(sizeof(*xn));
         if (res == 0)
         {
             fprintf(stderr, "Couldn't allocate memory for a zero res in mul");
@@ -452,7 +465,7 @@ bignum *mul(bignum *xn, bignum *xnp1)
     {
         uint64_t aNewSize = size1 / 2;
         uint64_t bNewSize = size1 - aNewSize;
-        bignum *b = new_bignum(bNewSize);
+        bigNum *b = new_bignum(bNewSize);
         if (b == NULL)
         {
             fprintf(stderr, "Couldn't allocate memory for b in mul");
@@ -464,7 +477,7 @@ bignum *mul(bignum *xn, bignum *xnp1)
         memcpy(b->array, xn->array, bNewSize * sizeof(elem_size_t));
         // b->array = xn->array;
 
-        bignum *a = new_bignum(aNewSize);
+        bigNum *a = new_bignum(aNewSize);
 
         if (a == NULL)
         {
@@ -477,7 +490,7 @@ bignum *mul(bignum *xn, bignum *xnp1)
 
         uint64_t cNewSize = size2 / 2;
         uint64_t dNewSize = size2 - cNewSize;
-        bignum *c = new_bignum(cNewSize);
+        bigNum *c = new_bignum(cNewSize);
         if (c == NULL)
         {
             fprintf(stderr, "Couldn't allocate memory for c in mul");
@@ -487,7 +500,7 @@ bignum *mul(bignum *xn, bignum *xnp1)
         c->array = xnp1->array + dNewSize;
         // memcpy(c->array, (xnp1->array + dNewSize), cNewSize * sizeof(elem_size_t));
 
-        bignum *d = new_bignum(dNewSize);
+        bigNum *d = new_bignum(dNewSize);
         if (d == NULL)
         {
             fprintf(stderr, "Couldn't allocate memory for d in mul");
@@ -497,16 +510,16 @@ bignum *mul(bignum *xn, bignum *xnp1)
         memcpy(d->array, xnp1->array, dNewSize * sizeof(elem_size_t));
         // d->array = xnp1->array;
         // memcpy(d->array, xnp1->array, xnp1->size * sizeof(unsigned long long));
-        bignum *ac = mul(a, c);
-        bignum *bd = mul(b, d);
-        bignum *a_add_b = add(a, b);
-        bignum *c_add_d = add(c, d);
+        bigNum *ac = mul(a, c);
+        bigNum *bd = mul(b, d);
+        bigNum *a_add_b = add(a, b);
+        bigNum *c_add_d = add(c, d);
 
-        bignum *abcd = mul(a_add_b, c_add_d);
+        bigNum *abcd = mul(a_add_b, c_add_d);
         free(a_add_b);
         free(c_add_d);
-        bignum *abcd_sub_ac = sub(abcd, ac);
-        bignum *ad_add_bc = sub(abcd_sub_ac, bd);
+        bigNum *abcd_sub_ac = sub(abcd, ac);
+        bigNum *ad_add_bc = sub(abcd_sub_ac, bd);
         free(a);
         free(b);
         free(c);
@@ -551,7 +564,7 @@ bignum *mul(bignum *xn, bignum *xnp1)
                 *(ad_add_bc->array) = 0;
             }
         }
-        bignum *res = add(add(ac, ad_add_bc), bd);
+        bigNum *res = add(add(ac, ad_add_bc), bd);
         free(abcd);
         free(abcd_sub_ac);
         free(ad_add_bc);
@@ -571,11 +584,11 @@ bignum *mul(bignum *xn, bignum *xnp1)
  *
  */
 
-bignum *mul2num(elem_size_t x, elem_size_t y)
+bigNum *mul2num(elem_size_t x, elem_size_t y)
 {
     if (x == 0 || y == 0)
     {
-        bignum *res = malloc(sizeof(*res));
+        bigNum *res = malloc(sizeof(*res));
         if (res == 0)
         {
             fprintf(stderr, "Couldn't allocate memory for a zero res in mul");
@@ -591,30 +604,30 @@ bignum *mul2num(elem_size_t x, elem_size_t y)
         elem_size_t b = (x << shift_size) >> shift_size;
         elem_size_t c = y >> shift_size;
         elem_size_t d = (y << shift_size) >> shift_size;
-        bignum ac;
+        bigNum ac;
         ac.size = 2;
         elem_size_t ac_array[] = {0, a * c};
 
         ac.array = ac_array;
 
-        bignum ad;
+        bigNum ad;
         ad.size = 2;
         elem_size_t ad_array[] = {((a * d) << shift_size), (a * d) >> shift_size};
         ad.array = ad_array;
 
-        bignum bc;
+        bigNum bc;
         bc.size = 2;
         elem_size_t bc_array[] = {(b * c) << shift_size, (b * c) >> shift_size};
         bc.array = bc_array;
 
-        bignum bd;
+        bigNum bd;
         bd.size = 1;
         elem_size_t bd_array[] = {b * d};
         bd.array = bd_array;
-        bignum *ac_add_ad = add(&ac, &ad);
-        bignum *ac_add_ad_add_bc = add(ac_add_ad, &bc);
+        bigNum *ac_add_ad = add(&ac, &ad);
+        bigNum *ac_add_ad_add_bc = add(ac_add_ad, &bc);
         free(ac_add_ad);
-        bignum *res = add(ac_add_ad_add_bc, &bd);
+        bigNum *res = add(ac_add_ad_add_bc, &bd);
         zero_justify(res);
         return res;
     }
@@ -626,11 +639,11 @@ bignum *mul2num(elem_size_t x, elem_size_t y)
  *
  */
 
-bignum *div2bignums(bignum *xn, bignum *xnp1)
+bigNum *div2bignums(bigNum *xn, bigNum *xnp1)
 {
     size_t size = xn->size;
-    bignum *res = new_bignum(size);
-    bignum *row = new_bignum(1);
+    bigNum *res = new_bignum(size);
+    bigNum *row = new_bignum(1);
     uint64_t t = xnp1->array[xnp1->size - 1] * 2;
     for (long i = xn->size - 1; i >= 0; i--)
     {
@@ -639,7 +652,7 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
         res->array[i] = 0;
         while (compare_bignum(row, xnp1) < 1) {
             if (t < row->array[xnp1->size-1]) {
-                bignum *temp = new_bignum(1);
+                bigNum *temp = new_bignum(1);
                 temp->array[0] = row->array[xnp1->size-1] / t;
                 row = sub(row, mul(xnp1, temp));
                 res->array[i] += temp->array[0];
@@ -657,7 +670,7 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
     return res;
 }
 
-int compare_bignum(bignum *xn, bignum *xnp1)
+int compare_bignum(bigNum *xn, bigNum *xnp1)
 {
     if (xn->size > xnp1->size)
     {
@@ -681,7 +694,7 @@ int compare_bignum(bignum *xn, bignum *xnp1)
     return 0;
 }
 
-void array_shift(bignum *n, int count)
+void array_shift(bigNum *n, int count)
 {
     long i;
     elem_size_t *tmp = realloc(n->array, (count + n->size) * sizeof(elem_size_t));
@@ -707,7 +720,7 @@ void array_shift(bignum *n, int count)
     n->size = n->size + count;
 }
 
-void zero_justify(bignum *n)
+void zero_justify(bigNum *n)
 {
     while ((n->size > 1) && (n->array[n->size - 1] == 0))
     {
@@ -728,11 +741,11 @@ uint64_t convertAccToN(uint64_t numDigits)
 
 /**
  *
- * Converts bignum to hexadecimal format string
+ * Converts bigNum to hexadecimal format string
  *
  */
 
-char *hexToPrint(bignum *a)
+char *hexToPrint(bigNum *a)
 {
     uint64_t count = a->size;
     int numCharinOneElem = N / 4;
@@ -858,7 +871,7 @@ void mulToPrint(elem_size_t *decArray, int *size)
     }
 }
 
-char *decToPrint(bignum *a)
+char *decToPrint(bigNum *a)
 {
     int count = a->size;
     int size = count * LOG10_2 * 32 / 9 + 1;
@@ -984,11 +997,89 @@ char *decToPrint(bignum *a)
  *
  */
 
-void freeBigNum(bignum *toFree)
+void freeBigNum(bigNum *toFree)
 {
     if (toFree->array != NULL)
     {
         free(toFree->array);
     }
     free(toFree);
+}
+
+bigNum *divideLongDivision(bigNum *dividend, bigNum *divisor) {
+    int highestBitDividend = calculateHighestBit(dividend->array[dividend->size - 1]);
+    int highestBitDivisor = calculateHighestBit(divisor->array[divisor->size - 1]);
+    uint64_t k = N * (dividend->size - 1) + highestBitDividend + 1;
+    uint64_t l = N * (divisor->size - 1) + highestBitDivisor + 1;
+    bigNum *r = new_bignum(divisor->size);
+    bigNum *d = new_bignum(divisor->size);
+    memcpy(r->array, divisor->array, sizeof(elem_size_t) * (divisor->size));
+    //clearing a bit according to long division algorithm
+    r->array[r->size-1] &= ~(1UL << highestBitDivisor);
+    bigNum *q = new_bignum(dividend->size);
+    bigNum *arrayTemp = new_bignum(r->size);
+    for(int i = 0; i <= k - l; i++) {
+        uint64_t arrayNumber = (k - (i + l - 1)) / N;
+        uint64_t bitInArray = (k - (i + l - 1)) % N;
+        int alpha = dividend->array[arrayNumber] & 1<<bitInArray;
+        memcpy(arrayTemp->array, r->array, (r->size) * sizeof (elem_size_t));
+        arrayTemp = bitShiftLeft(r, 1);
+        d->array = arrayTemp->array;
+        if (alpha > 0) {
+            d = addIntToBigNum(d, 1);
+        }
+        int subtract = compare_bignum(d, divisor);
+        if (subtract < 1) {
+            r = sub(d, divisor);
+        }
+        bitShiftLeft(q, 1);
+        if (subtract < 1) {
+            q = addIntToBigNum(q, 1);
+        }
+    }
+    free(arrayTemp);
+    printf("Quotient: %u and rest: %u", q->array[0], r->array[0]);
+    return q;
+}
+
+bigNum *bitShiftRight(bigNum *n, int count) {
+    if (n->size == 1 && n->array[0] == 0) {
+        return n;
+    }
+   while (count > 0) {
+       for (int i = 0; i < n->size; i++) {
+           n->array[i] = n->array[i]>>1;
+           if (i != n->size - 1 && n->array[i+1]&1) {
+               n->array[i] += TWO_POW_31;
+           }
+       }
+       count--;
+   }
+   zero_justify(n);
+   return n;
+}
+
+bigNum *bitShiftLeft(bigNum *n, int count) {
+    if (n->size == 1 && n->array[0] == 0) {
+        return n;
+    }
+    while (count > 0) {
+        for (int i = n->size - 1; i >= 0; i--) {
+            if (n->array[i] >= TWO_POW_31) {
+                if (i == n->size - 1) {
+                    n->array = realloc(n->array, (n->size + 1) * sizeof(elem_size_t));
+                }
+                n->array[i + 1] += 1;
+            }
+                n->array[i] = n->array[i]<<1;
+        }
+        count--;
+    }
+    return n;
+}
+
+bigNum *addIntToBigNum(bigNum *n, int toAdd) {
+    bigNum *temp = new_bignum(1);
+    temp->array[0] = toAdd;
+    return add(n, temp);
 }
