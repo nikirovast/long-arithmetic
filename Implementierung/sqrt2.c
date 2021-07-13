@@ -174,73 +174,71 @@ int main(int argc, char **argv) {
     //       res4->xn->array[0], res4->xnp1->array[0], res4->xnp1->size);
     int hexadecimal = 0;
     int c;
-    if (argc == 1 || argc > 3)
-    {
+    if (argc == 1 || argc > 3) {
         printUsage(argv);
         return 1;
     }
-    while (1)
-    {
+    while (1) {
         int option_index = 0;
         c = getopt_long(argc, argv, "hx", long_options, &option_index);
         if (c == -1) {
             break;
         }
-        switch (c)
-        {
-        case 'h': {
-            printUsage(argv);
-            return 1;
-        }
-        case 'x': {
-            hexadecimal = 1;
-            break;
-        }
-        default: {
-            fprintf(stderr, "Unknown option was used");
-            exit(1);
-        }
+        switch (c) {
+            case 'h': {
+                printUsage(argv);
+                return 1;
+            }
+            case 'x': {
+                hexadecimal = 1;
+                break;
+            }
+            default: {
+                fprintf(stderr, "Unknown option was used");
+                exit(1);
+            }
         }
     }
     // well known bug (or feature) with getopt_long changing the order of arguments for some reason
     uint64_t n = strtoull(argv[1 + hexadecimal], NULL, 0);
-    if (errno == ERANGE)
-    {
+    if (errno == ERANGE) {
         fprintf(stderr, "the given number can not be represented, please pick a number < UINT64_MAX");
         return 1;
     }
-    if (n == 0ULL || *argv[1 + hexadecimal] == '-')
-    {
+    if (n == 0ULL || *argv[1 + hexadecimal] == '-') {
         fprintf(stderr, "invalid number of iterations: it should be > 0 or the given parameter was not a number");
         return 1;
     }
-    /*struct matrix *res5;
+    struct matrix *res5;
     uint64_t op = convertAccToN(n);
-    bigNum *help = new_bignum(3);
-    help->array[0] = 0b1100011000100000000000000000000;
+    bigNum *help = new_bignum(1);
+    /*help->array[0] = 0b1100011000100000000000000000000;
     help->array[1] = 0b1101011110001110101111000101101;
     help->array[2] = 0b101;
-    //help->array[0] = 1000000000;
-    res5 = matrixBinaryExponentiation(op, calculateHighestBit(op));
-    if (n < 15) {
-        double result = (double) res5->xn->array[0] / (double) res5->xnp1->array[0];
-        printf("Result of division after %llu operations: %.15f", op,result);
-    }
-    else {
      */
+    help->array[0] = 10;
+    res5 = matrixBinaryExponentiation(op, calculateHighestBit(op));
 
-        //bigNum *helper = mul(res5->xn, help);
+    if (n < 1) {
+        double result = (double) res5->xn->array[0] / (double) res5->xnp1->array[0];
+        printf("Result of division after %llu operations: %.15f", op, result);
+    } else {
+
+
+        bigNum *helper = mul(res5->xn, help);
         //bigNum *res = div2bignums(helper, res5->xnp1);
-        bigNum *first = new_bignum(1);
-        bigNum *second = new_bignum(1);
+        /*bigNum* first = new_bignum(1);
+        bigNum* second = new_bignum(1);
         first->array[0] = 185;
         second->array[0] = 13;
         bigNum *res = divideLongDivision(first, second);
-        /*printf("Result of division after 1 operations: %u\n", res->array[0]);
-        printf("%u\n",res->array[1]);
-        printf("%u",res->array[2]);
          */
-    return 0;
+        bigNum *res = divideLongDivision(helper, res5->xnp1);
+        printf("Result of division after %llu operations: %u\n", op , res->array[0]);
+        printf("%u\n", res->array[1]);
+        printf("%u", res->array[2]);
+        return 0;
+    }
 }
 
 /**
@@ -1019,9 +1017,15 @@ bigNum *divideLongDivision(bigNum *dividend, bigNum *divisor) {
     bigNum *q = new_bignum(dividend->size);
     bigNum *arrayTemp = new_bignum(r->size);
     for(int i = 0; i <= k - l; i++) {
-        uint64_t arrayNumber = (k - (i + l - 1)) / N;
-        uint64_t bitInArray = (k - (i + l - 1)) % N;
-        int alpha = dividend->array[arrayNumber] & 1<<bitInArray;
+        uint64_t arrayNumber = dividend->size - 1 - ((31 - highestBitDividend + i + l - 1) / N);
+        uint64_t bitInArray;
+        if (arrayNumber == dividend->size - 1) {
+            bitInArray = highestBitDividend - (i + l - 1) % N;
+        }
+        else {
+            bitInArray = 31 - (i + l - 1) % N;
+        }
+        int alpha = dividend->array[arrayNumber] & (1<<bitInArray);
         memcpy(arrayTemp->array, r->array, (r->size) * sizeof (elem_size_t));
         arrayTemp = bitShiftLeft(r, 1);
         d->array = arrayTemp->array;
@@ -1032,13 +1036,16 @@ bigNum *divideLongDivision(bigNum *dividend, bigNum *divisor) {
         if (subtract < 1) {
             r = sub(d, divisor);
         }
+        else {
+            memcpy(r->array, d->array, (d->size) * sizeof (elem_size_t));
+        }
         bitShiftLeft(q, 1);
         if (subtract < 1) {
             q = addIntToBigNum(q, 1);
         }
     }
     free(arrayTemp);
-    printf("Quotient: %u and rest: %u", q->array[0], r->array[0]);
+    printf("Quotient: %u and rest: %u\n", q->array[0], r->array[0]);
     return q;
 }
 
@@ -1050,7 +1057,7 @@ bigNum *bitShiftRight(bigNum *n, int count) {
        for (int i = 0; i < n->size; i++) {
            n->array[i] = n->array[i]>>1;
            if (i != n->size - 1 && n->array[i+1]&1) {
-               n->array[i] += TWO_POW_31;
+               n->array[i] |= 1<<(N-1);
            }
        }
        count--;
@@ -1068,6 +1075,8 @@ bigNum *bitShiftLeft(bigNum *n, int count) {
             if (n->array[i] >= TWO_POW_31) {
                 if (i == n->size - 1) {
                     n->array = realloc(n->array, (n->size + 1) * sizeof(elem_size_t));
+                    n->size++;
+                    n->array[n->size - 1] = 0;
                 }
                 n->array[i + 1] += 1;
             }
