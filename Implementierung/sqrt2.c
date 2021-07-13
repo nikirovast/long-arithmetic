@@ -630,17 +630,25 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
 {
     size_t size = xn->size;
     bignum *res = new_bignum(size);
-    bignum *row = new_bignum(size);
-    row->size = 1;
+    bignum *row = new_bignum(1);
+    uint64_t t = xnp1->array[xnp1->size - 1] * 2;
     for (long i = xn->size - 1; i >= 0; i--)
     {
         array_shift(row, 1);
         row->array[0] = xn->array[i];
         res->array[i] = 0;
-        while (compare_bignum(row, xnp1) < 1)
-        {
-            res->array[i]++;
-            row = sub(row, xnp1);
+        while (compare_bignum(row, xnp1) < 1) {
+            if (t < row->array[xnp1->size-1]) {
+                bignum *temp = new_bignum(1);
+                temp->array[0] = row->array[xnp1->size-1] / t;
+                row = sub(row, mul(xnp1, temp));
+                res->array[i] += temp->array[0];
+
+            }
+            else {
+                res->array[i]++;
+                row = sub(row, xnp1);
+            }
             zero_justify(row);
         }
     }
@@ -675,9 +683,8 @@ int compare_bignum(bignum *xn, bignum *xnp1)
 
 void array_shift(bignum *n, int count)
 {
-    uint64_t i;
+    long i;
     elem_size_t *tmp = realloc(n->array, (count + n->size) * sizeof(elem_size_t));
-    n->size = n->size + count;
     if (tmp == NULL)
     {
         fprintf(stderr, "Couldn't reallocate memory for a n in arrayShift");
@@ -692,14 +699,12 @@ void array_shift(bignum *n, int count)
 
     for (i = n->size - 1; i >= 0; i--) {
         n->array[i + count] = n->array[i];
-        if (i == 0) {
-            break;
-        }
     }
 
     for (i = 0; i < count; i++) {
         *(n->array + i) = 0;
     }
+    n->size = n->size + count;
 }
 
 void zero_justify(bignum *n)
