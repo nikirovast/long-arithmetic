@@ -120,12 +120,14 @@ int main(int argc, char **argv)
     }
     int op = convertAccToN(n);
     matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
+    //matrix *res = matrixSimpleExponentiation(op);
     //double sqrt2 = 1 + (double)res->xn->array[0]/(double)res->xnp1->array[0];
     char *resultN = decToPrint(res->xn);
     char *resultNp1 = decToPrint(res->xnp1);
-    freeMatrix(res);
+    printf("%lu\n", res->xn->size);
     printf("xn:%s\n", resultN); 
-    printf("xnp1:%s\n", resultNp1); 
+    printf("xnp1:%s\n", resultNp1);
+    freeMatrix(res);
     //printf("sqrt2:%f\n", sqrt2); 
     //printf("Result int res5->xn->array[0]: %u and res5-xn->array[1]: %u", res5->xn->array[0], res5->xn->array[1]);
     return 0;
@@ -146,7 +148,7 @@ void printUsage(char **argv)
 
 matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
 {
-    matrix *res = malloc(2 * sizeof(*matrix2));
+    matrix *res = malloc(3 * sizeof(struct bignum));
     if (res == 0)
     {
         fprintf(stderr, "Couldn't allocate memory for a matrix in matrixMul");
@@ -626,7 +628,7 @@ void arrayShift(bignum *n, int count)
     {
         n->array = tmp;
     }
-    if ((n->size == 1) && (n->array[0] == 0))
+    if ((n->size == 0) && (n->array[0] == 0))
         return;
 
     for (i = n->size - 1; i >= 0; i--)
@@ -639,7 +641,7 @@ void arrayShift(bignum *n, int count)
 
 void zeroJustify(bignum *n)
 {
-    while ((n->size > 1) && (n->array[n->size - 1] == 0))
+    while ( (n->size == 1 && n->array[0] == 0)|| (n->size > 1) && (n->array[n->size - 1] == 0))
     {
         n->size--;
     }
@@ -954,7 +956,7 @@ bignum *divideLongDivision(bignum *dividend, bignum *divisor)
 
 bignum *bitShiftRight(bignum *n, int count)
 {
-    if (n->size == 1 && n->array[0] == 0)
+    if (n->size == 0 && n->array[0] == 0)
     {
         return n;
     }
@@ -976,7 +978,7 @@ bignum *bitShiftRight(bignum *n, int count)
 
 bignum *bitShiftLeft(bignum *n, int count)
 {
-    if (n->size == 1 && n->array[0] == 0)
+    if (n->size == 0 && n->array[0] == 0)
     {
         return n;
     }
