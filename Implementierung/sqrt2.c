@@ -26,8 +26,8 @@ struct bignum
 
 extern void sum(uint64_t n, bignum *xn, bignum *xnp1);
 bignum *mul(bignum *xn, bignum *xnp1);
-void zero_justify(bignum *n);
-void array_shift(bignum *n, int count);
+void zeroJustify(bignum *n);
+void arrayShift(bignum *n, int count);
 int compare_bignum(bignum *xn, bignum *xnp1);
 bignum *div2bignums(bignum *xn, bignum *xnp1);
 bignum *add(bignum *xn, bignum *xnp1);
@@ -42,7 +42,7 @@ char *decToPrint(bignum *a);
 void printUsage(char **argv);
 void freeBigNum(bignum *toFree);
 bignum *divideLongDivision(bignum *dividend, bignum *divisor);
-bignum *copy(bignum* from, int countBits);
+bignum *copy(bignum *from, int countBits);
 bignum *bitShiftRight(bignum *n, int count);
 bignum *bitShiftLeft(bignum *n, int count);
 bignum *addIntToBignum(bignum *n, int toAdd);
@@ -405,7 +405,7 @@ bignum *sub(bignum *xn, bignum *xnp1)
         }
         i++;
     }
-    zero_justify(res);
+    zeroJustify(res);
     return res;
 }
 
@@ -539,7 +539,7 @@ bignum *mul(bignum *xn, bignum *xnp1)
         freeBigNum(abcd);
         freeBigNum(abcd_sub_ac);
         freeBigNum(ad_add_bc);
-        zero_justify(res);
+        zeroJustify(res);
 
         return res;
     }
@@ -600,7 +600,7 @@ bignum *mul2num(elem_size_t x, elem_size_t y)
         freeBigNum(ac_add_ad);
         bignum *res = add(ac_add_ad_add_bc, &bd);
         freeBigNum(ac_add_ad_add_bc);
-        zero_justify(res);
+        zeroJustify(res);
         return res;
     }
 }
@@ -619,17 +619,17 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
     row->size = 1;
     for (long i = xn->size - 1; i >= 0; i--)
     {
-        array_shift(row, 1);
+        arrayShift(row, 1);
         row->array[0] = xn->array[i];
         res->array[i] = 0;
         while (compare_bignum(row, xnp1) < 1)
         {
             res->array[i]++;
             row = sub(row, xnp1);
-            zero_justify(row);
+            zeroJustify(row);
         }
     }
-    zero_justify(res);
+    zeroJustify(res);
     freeBigNum(row);
     return res;
 }
@@ -658,7 +658,7 @@ int compare_bignum(bignum *xn, bignum *xnp1)
     return 0;
 }
 
-void array_shift(bignum *n, int count)
+void arrayShift(bignum *n, int count)
 {
     long i;
     elem_size_t *tmp = realloc(n->array, (n->size + count) * sizeof(elem_size_t));
@@ -682,7 +682,7 @@ void array_shift(bignum *n, int count)
     n->size = n->size + count;
 }
 
-void zero_justify(bignum *n)
+void zeroJustify(bignum *n)
 {
     while ((n->size > 1) && (n->array[n->size - 1] == 0))
     {
@@ -1027,40 +1027,48 @@ void freeBigNum(bignum *toFree)
     }
 }
 
-bignum *divideLongDivision(bignum *dividend, bignum *divisor) {
+bignum *divideLongDivision(bignum *dividend, bignum *divisor)
+{
     int highestBitDividend = calculateHighestBit(dividend->array[dividend->size - 1]);
     int highestBitDivisor = calculateHighestBit(divisor->array[divisor->size - 1]);
     uint64_t k = N * (dividend->size - 1) + highestBitDividend + 1;
     uint64_t l = N * (divisor->size - 1) + highestBitDivisor + 1;
     bignum *d = new_bignum(divisor->size);
-    bignum* r = copy(dividend, l - 1);
+    bignum *r = copy(dividend, l - 1);
     bignum *q = new_bignum(dividend->size);
     bignum *arrayTemp = new_bignum(r->size);
-    for(int i = 0; i <= k - l; i++) {
+    for (int i = 0; i <= k - l; i++)
+    {
         uint64_t arrayNumber = dividend->size - 1 - ((31 - highestBitDividend + i + l - 1) / N);
         uint64_t bitInArray;
-        if (arrayNumber == dividend->size - 1) {
+        if (arrayNumber == dividend->size - 1)
+        {
             bitInArray = highestBitDividend - (i + l - 1) % N;
         }
-        else {
+        else
+        {
             bitInArray = 32 - (i + l - 1) % N;
         }
-        int alpha = dividend->array[arrayNumber] & (1<<bitInArray);
-        memcpy(arrayTemp->array, r->array, (r->size + 1) * sizeof (elem_size_t));
+        int alpha = dividend->array[arrayNumber] & (1 << bitInArray);
+        memcpy(arrayTemp->array, r->array, (r->size + 1) * sizeof(elem_size_t));
         arrayTemp = bitShiftLeft(r, 1);
         d->array = arrayTemp->array;
-        if (alpha > 0) {
+        if (alpha > 0)
+        {
             d = addIntToBignum(d, 1);
         }
         int subtract = compare_bignum(d, divisor);
-        if (subtract < 1) {
+        if (subtract < 1)
+        {
             r = sub(d, divisor);
         }
-        else {
-            memcpy(r->array, d->array, (d->size) * sizeof (elem_size_t));
+        else
+        {
+            memcpy(r->array, d->array, (d->size) * sizeof(elem_size_t));
         }
         bitShiftLeft(q, 1);
-        if (subtract < 1) {
+        if (subtract < 1)
+        {
             q = addIntToBignum(q, 1);
         }
     }
@@ -1070,73 +1078,92 @@ bignum *divideLongDivision(bignum *dividend, bignum *divisor) {
     return q;
 }
 
-bignum *bitShiftRight(bignum *n, int count) {
-    if (n->size == 1 && n->array[0] == 0) {
+bignum *bitShiftRight(bignum *n, int count)
+{
+    if (n->size == 1 && n->array[0] == 0)
+    {
         return n;
     }
-    while (count > 0) {
-        for (int i = 0; i < n->size; i++) {
-            n->array[i] = n->array[i]>>1;
-            if (i != n->size - 1 && n->array[i+1]&1) {
-                n->array[i] |= 1<<(N-1);
+    while (count > 0)
+    {
+        for (int i = 0; i < n->size; i++)
+        {
+            n->array[i] = n->array[i] >> 1;
+            if (i != n->size - 1 && n->array[i + 1] & 1)
+            {
+                n->array[i] |= 1 << (N - 1);
             }
         }
         count--;
     }
-    zero_justify(n);
+    zeroJustify(n);
     return n;
 }
 
-bignum *bitShiftLeft(bignum *n, int count) {
-    if (n->size == 1 && n->array[0] == 0) {
+bignum *bitShiftLeft(bignum *n, int count)
+{
+    if (n->size == 1 && n->array[0] == 0)
+    {
         return n;
     }
-    while (count > 0) {
-        for (int i = n->size - 1; i >= 0; i--) {
-            if (n->array[i] >= TWO_POW_31) {
-                if (i == n->size - 1) {
+    while (count > 0)
+    {
+        for (int i = n->size - 1; i >= 0; i--)
+        {
+            if (n->array[i] >= TWO_POW_31)
+            {
+                if (i == n->size - 1)
+                {
                     n->array = realloc(n->array, (n->size + 1) * sizeof(elem_size_t));
                     n->size++;
                     n->array[n->size - 1] = 0;
                 }
                 n->array[i + 1] += 1;
             }
-            n->array[i] = n->array[i]<<1;
+            n->array[i] = n->array[i] << 1;
         }
         count--;
     }
     return n;
 }
 
-bignum *addIntToBignum(bignum *n, int toAdd) {
+bignum *addIntToBignum(bignum *n, int toAdd)
+{
     bignum *temp = new_bignum(1);
     temp->array[0] = toAdd;
     return add(n, temp);
 }
 
-bignum *copy(bignum* from, int countBits) {
+bignum *copy(bignum *from, int countBits)
+{
     int size = (countBits - 1) / N;
     bignum *res = new_bignum(size + 1);
     int currentArrayFrom = from->size - 1;
-    int currentBitFrom = calculateHighestBit(from->array[from->size-1]);
+    int currentBitFrom = calculateHighestBit(from->array[from->size - 1]);
     int currentArraySet = (countBits - 1) / N;
     int currentBitSet = (countBits - 1) % N;
-    for(int i = countBits - 1; i >= 0; i--) {
-        if (from->array[currentArrayFrom] & 1ULL<<currentBitFrom) {
-            res->array[currentArraySet] |= 1ULL<<currentBitSet;
+    for (int i = countBits - 1; i >= 0; i--)
+    {
+        if (from->array[currentArrayFrom] & 1ULL << currentBitFrom)
+        {
+            res->array[currentArraySet] |= 1ULL << currentBitSet;
         }
-        if (currentBitFrom == 0) {
+        if (currentBitFrom == 0)
+        {
             currentArrayFrom--;
             currentBitFrom = 31;
         }
-        else {
+        else
+        {
             currentBitFrom--;
         }
-        if (currentBitSet == 0) {
+        if (currentBitSet == 0)
+        {
             currentArraySet--;
             currentBitSet = 31;
         }
-        else {
+        else
+        {
             currentBitSet--;
         }
     }
