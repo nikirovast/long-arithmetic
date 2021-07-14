@@ -28,7 +28,7 @@ extern void sum(uint64_t n, bignum *xn, bignum *xnp1);
 bignum *mul(bignum *xn, bignum *xnp1);
 void zeroJustify(bignum *n);
 void arrayShift(bignum *n, int count);
-int compare_bignum(bignum *xn, bignum *xnp1);
+int compareBignum(bignum *xn, bignum *xnp1);
 bignum *div2bignums(bignum *xn, bignum *xnp1);
 bignum *add(bignum *xn, bignum *xnp1);
 bignum *sub(bignum *xn, bignum *xnp1);
@@ -622,7 +622,7 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
         arrayShift(row, 1);
         row->array[0] = xn->array[i];
         res->array[i] = 0;
-        while (compare_bignum(row, xnp1) < 1)
+        while (compareBignum(row, xnp1) < 1)
         {
             res->array[i]++;
             row = sub(row, xnp1);
@@ -634,7 +634,7 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
     return res;
 }
 
-int compare_bignum(bignum *xn, bignum *xnp1)
+int compareBignum(bignum *xn, bignum *xnp1)
 {
     if (xn->size > xnp1->size)
     {
@@ -1057,7 +1057,7 @@ bignum *divideLongDivision(bignum *dividend, bignum *divisor)
         {
             d = addIntToBignum(d, 1);
         }
-        int subtract = compare_bignum(d, divisor);
+        int subtract = compareBignum(d, divisor);
         if (subtract < 1)
         {
             r = sub(d, divisor);
