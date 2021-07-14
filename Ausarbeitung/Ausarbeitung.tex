@@ -24,19 +24,19 @@ Die iterative Formel, die wir zur Berechnung der Konstante \(\sqrt{2}\) verwende
 \begin{equation}\label{eq:iterativeSqrt2}
 \lim_{n \to \infty} {1+\frac{x_n}{x_{n+1}}} = \sqrt{2} 
 \end{equation}
-Wobei die $x_n$ und $x_{n+1}$ Terme lassen sich durch Exponentiation der Matrix
+Wobei die $x_n$ und $x_{n+1}$ Terme lassen sich durch die Exponentiation der Matrix
 $\begin{pmatrix}
   0 & 1\\ 
   1 & 2
 \end{pmatrix}$ bestimmen, das heißt:
 \begin{equation}\label{eq:matrixPower}
 {\begin{pmatrix}
-0 & 1\\
-1 & 2
-\end{pmatrix} }^n =
-{\begin{pmatrix}
 x_{n-1} & x_n \\
 x_n & x_{n+1}
+\end{pmatrix} } =
+{\begin{pmatrix}
+0 & 1\\
+1 & 2
 \end{pmatrix} }^n
 \end{equation}
 Und um (\ref{eq:matrixPower}) zu berechnen, verwenden wir die schnelle Exponentiation, die im Folgenden im Detail erläutern wird.
@@ -44,6 +44,18 @@ Und um (\ref{eq:matrixPower}) zu berechnen, verwenden wir die schnelle Exponenti
 darum
 \subsection{Die schnelle Exponentiation auf Matrizen}%
 \subsection{Die Struktur, die uns erlaubt, die Zahlen mit beliebiger Genauigkeit zu speichern}%
+Da unser Hauptinteresse darin besteht, die Konstante mit hoher Genauigkeit zu berechnen, müssen wir die Werte von $x_n$ und $x_{n+1}$ bei großem n berechnen, was bedeutet, dass diese Zahlen möglicherweise nicht in das \textit{long} Format des Computerprotokolls passen. Um dies zu tun, speichern wir sie als ein Array von vorzeichenlosen 32-Bit-Zahlen, die jeweils 32 Bits der binären Darstellung der Zahl enthalten. Um es bequemer zu machen, weitere Berechnungen durchzuführen, speichern wir unsere Zahl in einem Array von links nach rechts, d.h. das Null-Element des Arrays enthält die niedrigsten 32 Bits.\\
+Wir wollen zum Beispiel die Zahl \textit{18446744073709558563} in unserer Struktur behalten. Die Darstellung im Binärsystem sieht wie folgt aus: \\
+\centerline{\textit{1|000000000000000000000000000000|0000000000000000000001101100100011}}
+Dann wird die in unserer Struktur wie folgt gespeichert:
+\begin{equation*}
+\begin{array}{|c|c|c|}\hline
+array[0] & array[1] & array[2]\\
+\hline
+00000000000000000001101100100011 & 00000000000000000000000000000000 & 1 \\
+\hline
+\end{array}
+\end{equation*}
 \subsection{Addition und Multiplikation dieser Zahlen}%
 \section{Genauigkeit}
 Wie in der Einleitung oben erwähnt, gehen wir davon aus, dass der Benutzer über die Konsole eingeben kann, mit welcher Genauigkeit das Ergebnis ausgegeben werden sollte. Wir haben uns dafür entschieden, dass in unserem Fall die Anzahl der korrekten Nachkommastellen eine angemessene Genauigkeit ist. Daher werden wir im Folgenden die Argumentation für die Schätzung der Anzahl der Iterationen demonstrieren, die erforderlich sind, um eine bestimmte Genauigkeit zu erreichen.\\ 
