@@ -47,6 +47,7 @@ bignum *bitShiftRight(bignum *n, int count);
 bignum *bitShiftLeft(bignum *n, int count);
 bignum *addIntToBignum(bignum *n, int toAdd);
 matrix *matrixSimpleExponentiation(unsigned long long n);
+void freeMatrix(matrix *toFree);
 
 bignum *new_bignum(size_t size)
 {
@@ -292,18 +293,18 @@ matrix *matrixSimpleExponentiation(unsigned long long n) {
 
 matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit)
 {
-     struct matrix *matrix = malloc(3 * sizeof(bignum));
-     if (matrix == NULL)
+    struct matrix *matrix = malloc(3 * sizeof(bignum));
+    if (matrix == NULL)
     {
         fprintf(stderr, "Couldn't allocate memory for a matrix");
         exit(1);
     }
-     matrix->xnp1 = new_bignum(1);
-     matrix->xnp1->array[0] = 2;
-     matrix->xn = new_bignum(1);
-     matrix->xn->array[0] = 1;
-     matrix->xnm1 = new_bignum(1);
-     matrix->xnm1->array[0] = 0;
+    matrix->xnp1 = new_bignum(1);
+    matrix->xnp1->array[0] = 2;
+    matrix->xn = new_bignum(1);
+    matrix->xn->array[0] = 1;
+    matrix->xnm1 = new_bignum(1);
+    matrix->xnm1->array[0] = 0;
     struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
     if (matrixInitial == NULL)
     {
@@ -318,10 +319,14 @@ matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit)
     *(matrixInitial->xnp1->array) = 2;
     for (int i = highestBit - 1; i >= 0; i--)
     {
-        matrix = matrixMultiplication(matrix, matrix);
+        struct matrix *tmp = matrixMultiplication(matrix, matrix);
+        freeMatrix(matrix);
+        matrix = tmp;
         if (n >> i & 1)
         {
-            matrix = matrixMultiplication(matrix, matrixInitial);
+            tmp = matrixMultiplication(matrix, matrixInitial);
+            freeMatrix(matrix);
+            matrix = tmp;
         }
     }
     freeBigNum(matrixInitial->xn);
@@ -959,6 +964,17 @@ void freeBigNum(bignum *toFree)
         {
             free(toFree->array);
         }
+        free(toFree);
+    }
+}
+
+void freeMatrix(matrix *toFree)
+{
+    if (toFree != NULL)
+    {
+        freeBigNum(toFree->xn);
+        freeBigNum(toFree->xnp1);
+        freeBigNum(toFree->xnm1);
         free(toFree);
     }
 }
