@@ -262,7 +262,7 @@ matrix *matrixSimpleExponentiation(unsigned long long n) {
     *(matrixInitial->xn->array) = 1;
     matrixInitial->xnp1 = new_bignum(1);
     *(matrixInitial->xnp1->array) = 2;
-    for(int i = 0; i < n; i++) {
+    for(int i = 0; i < n - 1; i++) {
         matrix = matrixMultiplication(matrix, matrixInitial);
     }
     freeBigNum(matrixInitial->xn);
