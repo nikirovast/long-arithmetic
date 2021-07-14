@@ -74,96 +74,8 @@ struct matrix
     bignum *xnm1;
 };
 
-// in VSCode 1st is in RCX, 2nd in RDX, 3rd in R8
 int main(int argc, char **argv)
 {
-    // printf("%i", convertAccToN(10));
-    // bignum* a = new_bignum(2);
-    // bignum* b = new_bignum(1);
-    //*(a->array + 0) = 4294967295;
-    //*(a->array + 1) = 1;
-    //*(b->array + 0) = 4294967295;
-    // char* r = hexPrint(a);
-    // printf("%u, %u, %u", a->array[0], a->array[1], b->array[0]);
-    // bignum* res = mul(a, b);
-
-    // uint64_t s = res->size;
-
-    // printf("\n");
-    // printf("Size: %lu\n", res->size);
-    // for (int i = res->size - 1; i >= 0; i--) {
-    //  printf("%u\n", res->array[i]);
-    //}
-
-    //// test mul1
-    // bignum* first = new_bignum(2);
-    // bignum* second = new_bignum(1);
-    //*(first->array + 0) = 1234;
-    //*(first->array + 1) = 1;
-    //*(second->array + 0) = 129;
-    // bignum* res1 = mul(first, second);
-    //// 554050940370
-    // for (int i = res1->size - 1; i >= 0; i--) {
-    //  printf("%u\n", res1->array[i]);
-    //}
-    // assert(res1->array[0] == 159186);
-    // assert(res1->array[1] == 129);
-
-    //// test mul2
-    // bignum* third = new_bignum(1);
-    // bignum* fourth = new_bignum(1);
-    //*(third->array) = 65537;
-    //*(fourth->array) = 89340;
-    // bignum* res2 = mul(third, fourth);
-    //// 5855075580
-    // for (int i = res2->size - 1; i >= 0; i--) {
-    //  printf("%u\n", res2->array[i]);
-    //}
-    // assert(res2->array[0] == 1560108284);
-    // assert(res2->array[1] == 1);
-
-    //// test div1
-    // bignum* divisor = new_bignum(2);
-    // bignum* dividend = new_bignum(1);
-    //*(divisor->array) = 90000;
-    //*(divisor->array + 1) = 1;
-    //*(dividend->array) = 7500;
-    // bignum* res3 = div2bignums(divisor, dividend);
-    // printf("Result of division: \n");
-    // printf("Size: %lu\n", res3->size);
-    // for (long i = res3->size - 1; i >= 0; i--) {
-    //  printf("%u\n", res3->array[i]);
-    //}
-
-    // int n = 20;
-    // struct matrix *res5;
-    // int op = convertAccToN(n);
-    // res5 = matrixBinaryExponentiation(matrix, op, calculateHighestBit(op));
-    // freeBigNum(matrix->xnp1);
-    // freeBigNum(matrix->xn);
-    // freeBigNum(matrix->xnm1);
-    // free(matrix);
-    // array_shift(res5->xn, 1);
-    // res4 = div2bignums(res5->xn, res5->xnp1);
-    // char *result = hexToPrint(res5->xn);
-    // char *test2 = decToPrint(res5->xn);
-    // double result = (double)res5->xn->array[0] / (double)res5->xnp1->array[0];
-
-    // char *result = hexToPrint(res4->xn);
-
-    // bignum *a = new_bignum(2);
-    // bignum *b = new_bignum(2);
-    //*(a->array) = 3521874100;
-    //*(a->array + 1) = 2154513721;
-    ////*a->array + 2) = 1774;
-    //*(b->array) = 3521874100;
-    //*(b->array + 1) = 2154513721;
-    ////*(b->array + 2) = 1774;
-    // bignum *res = mul(a, b);
-    // char *result = hexToPrint(res);
-    // printf("End matrix: %u, %u, %u with size of xnp1 %lu",
-    // res4->xnm1->array[0],
-    //       res4->xn->array[0], res4->xnp1->array[0], res4->xnp1->size);
     int hexadecimal = 0;
     int c;
     if (argc == 1 || argc > 3)
@@ -203,11 +115,19 @@ int main(int argc, char **argv)
     }
     if (n == 0ULL || *argv[1] == '-')
     {
-        fprintf(stderr, "invalid number of iterations: it should be > 0 or the given parameter was not a number");
+        fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
         return 1;
     }
-    matrix *res5 = matrixSimpleExponentiation(n);
-    printf("Result int res5->xn->array[0]: %u and res5-xn->array[1]: %u", res5->xn->array[0], res5->xn->array[1]);
+    int op = convertAccToN(n);
+    matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
+    //double sqrt2 = 1 + (double)res->xn->array[0]/(double)res->xnp1->array[0];
+    char *resultN = decToPrint(res->xn);
+    char *resultNp1 = decToPrint(res->xnp1);
+    freeMatrix(res);
+    printf("xn:%s\n", resultN); 
+    printf("xnp1:%s\n", resultNp1); 
+    //printf("sqrt2:%f\n", sqrt2); 
+    //printf("Result int res5->xn->array[0]: %u and res5-xn->array[1]: %u", res5->xn->array[0], res5->xn->array[1]);
     return 0;
 }
 
@@ -219,7 +139,7 @@ int main(int argc, char **argv)
 
 void printUsage(char **argv)
 {
-    printf("Usage: %s <number of iterations> \n", argv[0]);
+    printf("Usage: %s <number of digits> \n", argv[0]);
     printf("-x: sets output numeral system to hexadecimal, default: decimal\n");
     printf("-h|--help: for usage help");
 }
@@ -276,7 +196,7 @@ matrix *matrixSimpleExponentiation(unsigned long long n) {
     matrixInitial->xnp1 = new_bignum(1);
     *(matrixInitial->xnp1->array) = 2;
     for(int i = 0; i < n - 1; i++) {
-        struct matrix *tmp = matrixMultiplication(matrix, matrixInitial);
+	struct matrix *tmp = matrixMultiplication(matrix, matrixInitial);
         freeMatrix(matrix);
         matrix = tmp;
     }
