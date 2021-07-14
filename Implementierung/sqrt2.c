@@ -231,9 +231,21 @@ matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
         fprintf(stderr, "Couldn't allocate memory for a matrix in matrixMul");
         exit(1);
     }
-    res->xnm1 = add(mul(matrix1->xnm1, matrix2->xnm1), mul(matrix1->xn, matrix2->xn));
-    res->xn = add(mul(matrix1->xnm1, matrix2->xn), mul(matrix1->xn, matrix2->xnp1));
-    res->xnp1 = add(mul(matrix1->xn, matrix2->xn), mul(matrix1->xnp1, matrix2->xnp1));
+    bignum *tmp1 = mul(matrix1->xnm1, matrix2->xnm1);
+    bignum *tmp2 = mul(matrix1->xn, matrix2->xn);
+    res->xnm1 = add(tmp1, tmp2);
+    freeBigNum(tmp1);
+    freeBigNum(tmp2);
+    tmp1 = mul(matrix1->xnm1, matrix2->xn);
+    tmp2 = mul(matrix1->xn, matrix2->xnp1);
+    res->xn = add(tmp1, tmp2);
+    freeBigNum(tmp1);
+    freeBigNum(tmp2);
+    tmp1 = mul(matrix1->xn, matrix2->xn);
+    tmp2 = mul(matrix1->xnp1, matrix2->xnp1);
+    res->xnp1 = add(tmp1, tmp2);
+    freeBigNum(tmp1);
+    freeBigNum(tmp2);
     return res;
 }
 
