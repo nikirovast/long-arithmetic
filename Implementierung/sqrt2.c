@@ -729,7 +729,15 @@ char *hexToPrint(bignum *a)
     // could be confusing: first in the decomal format, last elem of array
     elem_size_t first = *(array + count);
     // to check how many bytes we need for the last elem of array
-    uint16_t addLen = snprintf(NULL, 8, "%x", first);
+    char *tmp = malloc(8);
+    if (tmp == 0)
+    {
+        fprintf(stderr, "Couldn't allocate memory for a tmp");
+        exit(1);
+    }
+    // always add plus 1 byte because snprintf always adds and of the string, but we overwrite it then
+    uint16_t addLen = snprintf(tmp, 9, "%x", first);
+    free(tmp);
     // One extra for a string terminator
     uint64_t len = count * numCharinOneElem + addLen + 1;
 
@@ -742,7 +750,7 @@ char *hexToPrint(bignum *a)
         fprintf(stderr, "Couldn't allocate memory for a string in hexPrint");
         exit(1);
     }
-    snprintf(str, addLen, "%x", first);
+    snprintf(str, addLen + 1, "%x", first);
     str += addLen;
     if (count == 0)
     {
@@ -753,7 +761,7 @@ char *hexToPrint(bignum *a)
     while (1)
     {
         elem_size_t c = *(array + count);
-        snprintf(str, numCharinOneElem, "08%x", c);
+        snprintf(str, numCharinOneElem + 1, "%08x", c);
         str += numCharinOneElem;
         if (count == 0)
         {
