@@ -34,7 +34,7 @@ bignum *add(bignum *xn, bignum *xnp1);
 bignum *sub(bignum *xn, bignum *xnp1);
 bignum *mul2num(elem_size_t x, elem_size_t y);
 matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2);
-matrix *matrixBinaryExponentiation(matrix *matrix, unsigned long long n, int highestBit);
+matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit);
 int calculateHighestBit(unsigned long long n);
 uint64_t convertAccToN(uint64_t numDigits);
 char *hexToPrint(bignum *a);
@@ -132,19 +132,6 @@ int main(int argc, char **argv)
     // for (long i = res3->size - 1; i >= 0; i--) {
     //  printf("%u\n", res3->array[i]);
     //}
-
-    // struct matrix *matrix = malloc(3 * sizeof(bignum));
-    // if (matrix == NULL)
-    //{
-    //    fprintf(stderr, "Couldn't allocate memory for a matrix");
-    //    exit(1);
-    //}
-    // matrix->xnp1 = new_bignum(1);
-    // matrix->xnp1->array[0] = 2;
-    // matrix->xn = new_bignum(1);
-    // matrix->xn->array[0] = 1;
-    // matrix->xnm1 = new_bignum(1);
-    // matrix->xnm1->array[0] = 0;
 
     // int n = 20;
     // struct matrix *res5;
@@ -253,8 +240,20 @@ matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
  *
  */
 
-matrix *matrixBinaryExponentiation(matrix *matrix, unsigned long long n, int highestBit)
+matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit)
 {
+     struct matrix *matrix = malloc(3 * sizeof(bignum));
+     if (matrix == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for a matrix");
+        exit(1);
+    }
+     matrix->xnp1 = new_bignum(1);
+     matrix->xnp1->array[0] = 2;
+     matrix->xn = new_bignum(1);
+     matrix->xn->array[0] = 1;
+     matrix->xnm1 = new_bignum(1);
+     matrix->xnm1->array[0] = 0;
     struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
     if (matrixInitial == NULL)
     {
@@ -436,11 +435,6 @@ bignum *mul(bignum *xn, bignum *xnp1)
         uint64_t aNewSize = size1 / 2;
         uint64_t bNewSize = size1 - aNewSize;
         bignum *b = new_bignum(bNewSize);
-        if (b == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for b in mul");
-            exit(1);
-        }
         b->size = bNewSize;
 
         // we need to write in b the second part of xn
@@ -449,12 +443,6 @@ bignum *mul(bignum *xn, bignum *xnp1)
         b->array = xn->array;
 
         bignum *a = new_bignum(aNewSize);
-
-        if (a == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for a in mul");
-            exit(1);
-        }
         a->size = aNewSize;
         // memcpy(a->array, (xn->array + bNewSize), aNewSize * sizeof(elem_size_t));
         a->array = xn->array + bNewSize;
@@ -462,21 +450,11 @@ bignum *mul(bignum *xn, bignum *xnp1)
         uint64_t cNewSize = size2 / 2;
         uint64_t dNewSize = size2 - cNewSize;
         bignum *c = new_bignum(cNewSize);
-        if (c == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for c in mul");
-            exit(1);
-        }
         c->size = cNewSize;
         c->array = xnp1->array + dNewSize;
         // memcpy(c->array, (xnp1->array + dNewSize), cNewSize * sizeof(elem_size_t));
 
         bignum *d = new_bignum(dNewSize);
-        if (d == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for d in mul");
-            exit(1);
-        }
         d->size = dNewSize;
         // memcpy(d->array, xnp1->array, dNewSize * sizeof(elem_size_t));
         d->array = xnp1->array;
