@@ -2,7 +2,7 @@
 .global quicksort_asm
 .text
 
-// void sqrt2(uint64_t n, struct bignum *xn, struct bignum *xnp1);
+// void sqrt2(uint64_t n, struct bigNum *xn, struct bigNum *xnp1);
 // This function adds two numbers assumming, there's enough space and the first one is bigger or has the same size as the second
 // The result is in the first parameter
 // !IMP First param should have enough space
