@@ -709,114 +709,8 @@ uint64_t convertAccToN(uint64_t numDigits)
 
 char *hexToPrint(bignum *a)
 {
-    if (a->size > 0)
-    {
-
-        uint64_t count = a->size;
-        int numCharinOneElem = N / 4;
-        // One extra for a string terminator
-        uint64_t len = count * numCharinOneElem + 1;
-        count--;
-        elem_size_t *array = a->array;
-
-        elem_size_t first = *(array + count);
-        int firstNum = 8;
-        if (first <= 0xf)
-        {
-            firstNum = 1;
-            len -= 7;
-        }
-        else if (first <= 0xff)
-        {
-            firstNum = 2;
-            len -= 6;
-        }
-        else if (first <= 0xfff)
-        {
-            firstNum = 3;
-            len -= 5;
-        }
-        else if (first <= 0xffff)
-        {
-            firstNum = 4;
-            len -= 4;
-        }
-        else if (first <= 0xfffff)
-        {
-            firstNum = 5;
-            len -= 3;
-        }
-        else if (first <= 0xffffff)
-        {
-            firstNum = 6;
-            len -= 2;
-        }
-        else if (first <= 0xfffffff)
-        {
-            firstNum = 7;
-            len--;
-        }
-
-        char *string, *str;
-        str = string = malloc(len);
-        if (string == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for a string in hexPrint");
-            exit(1);
-        }
-        snprintf(str, firstNum, "%x", first);
-        str += firstNum;
-        count--;
-        while (1)
-        {
-            elem_size_t c = *(array + count);
-            /*if (c <= 0xf)
-            {
-                snprintf(str, 8, "0000000%x", c);
-            }
-            else if (c <= 0xff)
-            {
-                snprintf(str, 8, "000000%x", c);
-            }
-            else if (c <= 0xfff)
-            {
-                snprintf(str, 8, "00000%x", c);
-            }
-            else if (c <= 0xffff)
-            {
-                snprintf(str, 8, "0000%x", c);
-            }
-            else if (c <= 0xfffff)
-            {
-                snprintf(str, 8, "000%x", c);
-            }
-            else if (c <= 0xffffff)
-            {
-                snprintf(str, 8, "00%x", c);
-            }
-            else if (c <= 0xfffffff)
-            {
-                snprintf(str, 8, "0%x", c);
-            }
-            else
-            {
-                snprintf(str, 8, "%x", c);
-            }*/
-            snprintf(str, 8, "08%x", c);
-            str += numCharinOneElem;
-            if (count == 0)
-            {
-                break;
-            }
-            else
-            {
-                count--;
-            }
-        }
-        *str = '\0';
-        return string;
-    }
-    else
+    uint64_t count = a->size;
+    if (count == 0)
     {
         char *zero = malloc(2);
         if (zero == NULL)
@@ -828,6 +722,45 @@ char *hexToPrint(bignum *a)
         *(zero + 1) = 0;
         return zero;
     }
+
+    int numCharinOneElem = N / 4;
+    count--;
+    elem_size_t *array = a->array;
+    // could be confusing: first in the decomal format, last elem of array
+    elem_size_t first = *(array + count);
+    // to check how many bytes we need for the last elem of array
+    uint16_t addLen = snprintf(NULL, 8, "%x", first);
+    // One extra for a string terminator
+    uint64_t len = count * numCharinOneElem + addLen + 1;
+
+    // string a pointer to the beginning of the string,
+    // str the pointer to the location where we should write right now
+    char *string, *str;
+    str = string = malloc(len);
+    if (string == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for a string in hexPrint");
+        exit(1);
+    }
+    snprintf(str, addLen, "%x", first);
+    str += addLen;
+    count--;
+    while (1)
+    {
+        elem_size_t c = *(array + count);
+        snprintf(str, numCharinOneElem, "08%x", c);
+        str += numCharinOneElem;
+        if (count == 0)
+        {
+            break;
+        }
+        else
+        {
+            count--;
+        }
+    }
+    *str = '\0';
+    return string;
 }
 
 void addToPrint(elem_size_t *decArray, uint64_t *size, elem_size_t summand)
