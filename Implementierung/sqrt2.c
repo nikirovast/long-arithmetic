@@ -744,6 +744,11 @@ char *hexToPrint(bignum *a)
     }
     snprintf(str, addLen, "%x", first);
     str += addLen;
+    if (count == 0)
+    {
+        *str = '\0';
+        return string;
+    }
     count--;
     while (1)
     {
