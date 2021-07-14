@@ -206,7 +206,7 @@ int main(int argc, char **argv)
         return 1;
     }
     matrix *res5 = matrixSimpleExponentiation(n);
-    printf("Result int res5->xn->array[0]: %u", res5->xn->array[0]);
+    printf("Result int res5->xn->array[0]: %u and res5-xn->array[1]: %u", res5->xn->array[0], res5->xn->array[1]);
     return 0;
 }
 
@@ -1030,14 +1030,15 @@ bignum *bitShiftLeft(bignum *n, int count)
     {
         return n;
     }
-    while (count > 0)
-    {
-        for (int i = n->size - 1; i >= 0; i--)
+    while (count > 0) {
+        if (count > 31) {
+            count -= 32;
+            arrayShift(n, 1);
+        } else {
+            for (int i = n->size - 1; i >= 0; i--)
         {
-            if (n->array[i] >= TWO_POW_31)
-            {
-                if (i == n->size - 1)
-                {
+            if (n->array[i] >= TWO_POW_31) {
+                if (i == n->size - 1) {
                     n->array = realloc(n->array, (n->size + 1) * sizeof(elem_size_t));
                     n->size++;
                     n->array[n->size - 1] = 0;
@@ -1047,6 +1048,7 @@ bignum *bitShiftLeft(bignum *n, int count)
             n->array[i] = n->array[i] << 1;
         }
         count--;
+    }
     }
     return n;
 }
