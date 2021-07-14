@@ -1,5 +1,6 @@
 % Diese Zeile bitte -nicht- aendern.
 \documentclass[course=erap]{aspdoc}
+\usepackage{mathtools}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% TODO: Ersetzen Sie in den folgenden Zeilen die entsprechenden -Texte-
@@ -39,8 +40,19 @@ x_n & x_{n+1}
 \end{pmatrix} }^n
 \end{equation}
 Und um (\ref{eq:matrixPower}) zu berechnen, verwenden wir die schnelle Exponentiation, die im Folgenden im Detail erläutert wird.
-\subsection{Warum die schnelle Exponentiation funktioniert}%
-darum
+\subsection{Korrektheit der schnellen Exponentiation}%
+Schnelle Exponentiation erlaubt es, wie der Name schon sagt, eine Zahl schneller zu potenzieren als die naive Exponentiation: \begin{equation}
+x^n = \underbrace{x \cdot x \cdot x \cdot ... \cdot x}_\text{n mal}
+\end{equation} 
+Um das Verfahren besser zu schildern, beschreiben wir das Prinzip anhand eines Beispiels: $n = 37$. Diese Zahl lässt sich als Summe von den Zweierpotenzen darstellen:
+\begin{equation}
+ 37 = 1 \cdot 2^0 + 0 \cdot 2^1 + 1 \cdot 2^2 + 0 \cdot 2^3 + 0 \cdot 2^4 + 1 \cdot 2^5 = 1 + 4 + 32
+\end{equation}
+Offensichtlich gilt unter anderem: 
+\begin{equation}
+    x^{37} = x^{32} \cdot x^4 \cdot x^1
+\end{equation}
+Daraus ergibt sich, dass die bisher enstandene Zahl mit sich selbst $k$ mal multipliziert wird, wobei $k$ das höchstgesetzte Bit der binären Darstellung von $n$ ist, und falls an der $i$-ten Stelle eine 1 steht, wird $x^i$ mit dem bisher erreichten Ergebnis multiplziert, ansonsten weiter potenziert bis das letzte Bit abgearbeitet wurde. Am Ende ergibt sich genau das gleiche Ergebnis wie bei der normalen Exponentiation. In unserer Implementierung haben wir dieses Verfahren ein wenig angepasst, was in folgendem Abschnitt verdeutlicht wird. 
 \subsection{Die schnelle Exponentiation auf Matrizen}%
 \subsection{Die Struktur, die uns erlaubt, die Zahlen mit beliebiger Genauigkeit zu speichern}%
 Da unser Hauptinteresse darin besteht, die Konstante mit hoher Genauigkeit zu berechnen, müssen wir die Werte von $x_n$ und $x_{n+1}$ bei großem n berechnen, was bedeutet, dass diese Zahlen möglicherweise nicht in das \textit{long} Format des Computerprotokolls passen. Um dies zu tun, speichern wir sie als ein Array von vorzeichenlosen 32-Bit-Zahlen, die jeweils 32 Bits der binären Darstellung der Zahl enthalten. Um weitere Berechnungen bequemer durchzuführen, speichern wir unsere Zahl in einem Array von links nach rechts, d.h. das Null-Element des Arrays enthält die niedrigsten 32 Bits.\\
