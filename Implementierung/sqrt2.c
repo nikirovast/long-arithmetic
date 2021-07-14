@@ -729,7 +729,7 @@ char *hexToPrint(bignum *a)
     // could be confusing: first in the decomal format, last elem of array
     elem_size_t first = *(array + count);
     // to check how many bytes we need for the last elem of array
-    char *tmp = malloc(8);
+    char *tmp = malloc(9);
     if (tmp == 0)
     {
         fprintf(stderr, "Couldn't allocate memory for a tmp");
@@ -778,11 +778,12 @@ char *hexToPrint(bignum *a)
 
 void addToPrint(elem_size_t *decArray, uint64_t *size, elem_size_t summand)
 {
-    elem_size_t tmp = summand;
+    uint64_t tmp = summand;
     for (int i = 0; i < *size; i++)
     {
-        if (!tmp)
+        if (tmp == 0){
             return;
+        }
         *(decArray + i) = (tmp += *(decArray + i)) % POWER10_9;
         tmp /= POWER10_9;
     }
@@ -795,7 +796,7 @@ void addToPrint(elem_size_t *decArray, uint64_t *size, elem_size_t summand)
 
 void mulToPrint(elem_size_t *decArray, uint64_t *size)
 {
-    elem_size_t tmp = 0;
+    uint64_t tmp = 0;
     uint64_t max = ELEM_SIZE_MAX;
     max++;
     for (int i = 0; i < *size; i++)
@@ -815,133 +816,8 @@ void mulToPrint(elem_size_t *decArray, uint64_t *size)
 
 char *decToPrint(bignum *a)
 {
-
     uint64_t count = a->size;
-    if (count > 0)
-    {
-
-        uint64_t size = count * LOG10_2 * 32 / 9 + 1;
-        count--;
-        elem_size_t *decArray;
-        decArray = malloc(size * sizeof(elem_size_t));
-        if (decArray == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for decArray in decToPrint");
-            exit(1);
-        }
-        elem_size_t *bytes = a->array;
-        *decArray = 0;
-        size = 1;
-        uint64_t tmp = *(bytes + count);
-        if (tmp)
-        {
-            addToPrint(decArray, &size, tmp);
-        }
-
-        while (count--)
-        {
-            mulToPrint(decArray, &size);
-            tmp = *(bytes + count);
-            if (tmp)
-            {
-                addToPrint(decArray, &size, tmp);
-            }
-        }
-
-        tmp = *(decArray + size - 1);
-        char *string, *str;
-        int len = 9;
-        if (tmp < 10)
-        {
-            len = 1;
-        }
-        else if (tmp < 100)
-        {
-            len = 2;
-        }
-        else if (tmp < 1000)
-        {
-            len = 3;
-        }
-        else if (tmp < 10000)
-        {
-            len = 4;
-        }
-        else if (tmp < 100000)
-        {
-            len = 5;
-        }
-        else if (tmp < 1000000)
-        {
-            len = 6;
-        }
-        else if (tmp < 10000000)
-        {
-            len = 7;
-        }
-        else if (tmp < 100000000)
-        {
-            len = 8;
-        }
-        uint64_t notOF = size;
-        uint64_t max = 9 * notOF + len + 1;
-        string = str = malloc(max);
-
-        if (string == NULL)
-        {
-            fprintf(stderr, "Couldn't allocate memory for string in decToPrint");
-            exit(1);
-        }
-        snprintf(str, len, "%llu", tmp);
-        str += len;
-        size--;
-        while (size--)
-        {
-            tmp = *(decArray + size);
-            if (tmp < 10)
-            {
-                snprintf(str, 9, "00000000%llu", tmp);
-            }
-            else if (tmp < 100)
-            {
-                snprintf(str, 9, "0000000%llu", tmp);
-            }
-            else if (tmp < 1000)
-            {
-                snprintf(str, 9, "000000%llu", tmp);
-            }
-            else if (tmp < 10000)
-            {
-                snprintf(str, 9, "00000%llu", tmp);
-            }
-            else if (tmp < 100000)
-            {
-                snprintf(str, 9, "0000%llu", tmp);
-            }
-            else if (tmp < 1000000)
-            {
-                snprintf(str, 9, "000%llu", tmp);
-            }
-            else if (tmp < 10000000)
-            {
-                snprintf(str, 9, "00%llu", tmp);
-            }
-            else if (tmp < 100000000)
-            {
-                snprintf(str, 9, "0%llu", tmp);
-            }
-            else
-            {
-                snprintf(str, 9, "%llu", tmp);
-            }
-
-            str += 9;
-        }
-        *str = '\0';
-        free(decArray);
-        return string;
-    }
-    else
+    if (count == 0)
     {
         char *zero = malloc(2);
         if (zero == NULL)
@@ -953,6 +829,92 @@ char *decToPrint(bignum *a)
         *(zero + 1) = 0;
         return zero;
     }
+    uint64_t size = count * LOG10_2 * 32 / 9 + 1;
+    count--;
+    elem_size_t *decArray;
+    decArray = malloc(size * sizeof(elem_size_t));
+    if (decArray == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for decArray in decToPrint");
+        exit(1);
+    }
+    elem_size_t *array = a->array;
+    *decArray = 0;
+    size = 1;
+    uint64_t tmp = *(array + count);
+    if (tmp != 0)
+    {
+        addToPrint(decArray, &size, tmp);
+    }
+    if (count > 0)
+    {
+
+        count--;
+        while (1)
+        {
+            mulToPrint(decArray, &size);
+            tmp = *(array + count);
+            if (tmp)
+            {
+                addToPrint(decArray, &size, tmp);
+            }
+            if (count == 0)
+            {
+                break;
+            }
+            else
+            {
+                count--;
+            }
+        }
+    }
+    tmp = *(decArray + size - 1);
+    elem_size_t temp = tmp;
+    char *string, *str;
+    char *toCheck = malloc(11);
+    if (toCheck == 0)
+    {
+        fprintf(stderr, "Couldn't allocate memory for a tmp");
+        exit(1);
+    }
+    // always add plus 1 byte because snprintf always adds and of the string, but we overwrite it then
+    uint16_t addLen = snprintf(toCheck, 11, "%u", temp);
+    free(toCheck);
+    size--;
+    uint64_t notOF = size;
+    uint64_t max = 10 * notOF + addLen + 1;
+    string = str = malloc(max);
+
+    if (string == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for string in decToPrint");
+        exit(1);
+    }
+    snprintf(str, addLen + 1, "%u", temp);
+    str += addLen;
+    if (size == 0)
+    {
+        *str = '\0';
+        free(decArray);
+        return string;
+    }
+    size--;
+    while (1)
+    {
+        temp = *(decArray + size);
+        str += snprintf(str, 11, "%09u", temp);
+        if (size == 0)
+        {
+            break;
+        }
+        else
+        {
+            size--;
+        }
+    }
+    *str = '\0';
+    free(decArray);
+    return string;
 }
 
 /**
