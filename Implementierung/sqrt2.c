@@ -46,6 +46,7 @@ bignum *copy(bignum *from, int countBits);
 bignum *bitShiftRight(bignum *n, int count);
 bignum *bitShiftLeft(bignum *n, int count);
 bignum *addIntToBignum(bignum *n, int toAdd);
+matrix *matrixSimpleExponentiation(unsigned long long n);
 
 bignum *new_bignum(size_t size)
 {
@@ -204,6 +205,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "invalid number of iterations: it should be > 0 or the given parameter was not a number");
         return 1;
     }
+    matrix *res5 = matrixSimpleExponentiation(n);
+    printf("Result int res5->xn->array[0]: %u", res5->xn->array[0]);
     return 0;
 }
 
@@ -232,6 +235,41 @@ matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
     res->xn = add(mul(matrix1->xnm1, matrix2->xn), mul(matrix1->xn, matrix2->xnp1));
     res->xnp1 = add(mul(matrix1->xn, matrix2->xn), mul(matrix1->xnp1, matrix2->xnp1));
     return res;
+}
+
+matrix *matrixSimpleExponentiation(unsigned long long n) {
+    struct matrix *matrix = malloc(3 * sizeof(bignum));
+    if (matrix == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for a matrix");
+        exit(1);
+    }
+    matrix->xnp1 = new_bignum(1);
+    matrix->xnp1->array[0] = 2;
+    matrix->xn = new_bignum(1);
+    matrix->xn->array[0] = 1;
+    matrix->xnm1 = new_bignum(1);
+    matrix->xnm1->array[0] = 0;
+    struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
+    if (matrixInitial == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixBinaryExp");
+        exit(1);
+    }
+    matrixInitial->xnm1 = new_bignum(1);
+    *(matrixInitial->xnm1->array) = 0;
+    matrixInitial->xn = new_bignum(1);
+    *(matrixInitial->xn->array) = 1;
+    matrixInitial->xnp1 = new_bignum(1);
+    *(matrixInitial->xnp1->array) = 2;
+    for(int i = 0; i < n; i++) {
+        matrix = matrixMultiplication(matrix, matrixInitial);
+    }
+    freeBigNum(matrixInitial->xn);
+    freeBigNum(matrixInitial->xnm1);
+    freeBigNum(matrixInitial->xnp1);
+    free(matrixInitial);
+    return matrix;
 }
 
 /**
