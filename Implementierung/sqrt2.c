@@ -276,7 +276,9 @@ matrix *matrixSimpleExponentiation(unsigned long long n) {
     matrixInitial->xnp1 = new_bignum(1);
     *(matrixInitial->xnp1->array) = 2;
     for(int i = 0; i < n - 1; i++) {
-        matrix = matrixMultiplication(matrix, matrixInitial);
+        struct matrix *tmp = matrixMultiplication(matrix, matrixInitial);
+        freeMatrix(matrix);
+        matrix = tmp;
     }
     freeBigNum(matrixInitial->xn);
     freeBigNum(matrixInitial->xnm1);
