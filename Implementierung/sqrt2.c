@@ -24,6 +24,13 @@ struct bignum
     elem_size_t *array;
 };
 
+/**
+ * Calculate elapsed time
+ */
+double time_s(struct timespec s, struct timespec e) {
+    return (e.tv_sec - s.tv_sec) + (e.tv_nsec - s.tv_nsec) * 1e-9;
+}
+
 extern void sum(uint64_t n, bignum *xn, bignum *xnp1);
 bignum *mul(bignum *xn, bignum *xnp1);
 void zeroJustify(bignum *n);
