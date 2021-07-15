@@ -17,6 +17,7 @@
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
+typedef struct timespec timespec;
 static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
 struct bignum
 {
