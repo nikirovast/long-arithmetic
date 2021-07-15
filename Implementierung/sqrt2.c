@@ -48,7 +48,7 @@ bignum* mul2num(elem_size_t x, elem_size_t y);
 matrix* matrixMultiplication(matrix *matrix1, matrix *matrix2);
 matrix* matrixBinaryExponentiation(uint64_t n, uint64_t highestBit);
 uint64_t calculateHighestBit(uint64_t n);
-uint64_t convertAccToN(uint64_t numDigits);
+uint64_t convertAccToN(uint64_t numDigits, int flag);
 char *hexToPrint(bignum *a);
 char *decToPrint(bignum *a);
 void printUsage(char **argv);
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "the given number can not be represented, please pick a number <= %lu\n", UINT64_MAX);
 		return 1;
 	}
-	if (n == 0 ULL || *argv[1 + hexadecimal] == '-')
+	if (n == 0ULL || *argv[1 + hexadecimal] == '-')
 	{
 		fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number\n");
 		return 1;
@@ -140,11 +140,11 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	uint64_t op = convertAccToN(n);
+	uint64_t op = convertAccToN(n, hexadecimal);
 	struct timespec start;
 	clock_gettime(CLOCK_MONOTONIC, &start);
-	//matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
-	matrix *res = matrixSimpleExponentiation(op);
+	matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
+	//matrix *res = matrixSimpleExponentiation(op);
 	char *xn = decToPrint(res->xn);
 	char *xnp1 = decToPrint(res->xnp1);
 	struct timespec end;
@@ -685,7 +685,7 @@ int compareBignum(bignum *xn, bignum *xnp1)
  *
  */
 
-void arrayShift(bignum *n, int count)
+void arrayShift(bignum *n, uint64_t count)
 {
 	uint64_t i;
 	elem_size_t *tmp = realloc(n->array, (n->size + count) *sizeof(elem_size_t));
@@ -710,13 +710,11 @@ void arrayShift(bignum *n, int count)
 		}
 		i--;
 	}
-
-	for (i = 0; i < count; i++)
-		*
-		(n->array + i) = 0;
-}
-n->size = n->size + count;
-zeroJustify(n);
+	for (i = 0; i < count; i++) {
+        *(n->array + i) = 0;
+    }
+    n->size = n->size + count;
+    zeroJustify(n);
 }
 
 /**
@@ -1239,8 +1237,7 @@ bignum* bitShiftLeft(bignum *n, uint64_t count)
 		}
 		count--;
 	}
-}
-return n;
+    return n;
 }
 
 bignum* addIntToBignum(bignum *n, uint64_t toAdd)
@@ -1252,44 +1249,43 @@ bignum* addIntToBignum(bignum *n, uint64_t toAdd)
 	return res;
 }
 
-bignum* copy(bignum *from, uint64_t countBits)
+bignum *copy(bignum *from, uint64_t countBits)
 {
-	size = (countBits - 1) / N;
-	bi uint64_tgnum *res = new_bignum(size + 1);
-	uint64_t currentArrayFrom = from->size - 1;
-	uint64_t currentBitFrom = calculateHighestBit(from->array[from->size - 1]);
-	uint64_t currentArraySet = (countBits - 1) / N;
-	uint64_t currentBitSet = (countBits - 1) % N;
-	uint64_t counter = countBits - 1;
-	while (1)
-	{
-		if (from->array[currentArrayFrom] &1 ULL << currentBitFrom)
-		{
-			res->array[currentArraySet] |= 1 ULL << currentBitSet;
-		}
-		if (currentBitFrom == 0)
-		{
-			currentArrayFrom--;
-			currentBitFrom = 31;
-		}
-		else
-		{
-			currentBitFrom--;
-		}
-		if (currentBitSet == 0)
-		{
-			currentArraySet--;
-			currentBitSet = 31;
-		}
-		else
-		{
-			currentBitSet--;
-		}
-		if (counter == 0)
-		{
-			break;
-		}
-		counter--;
-	}
-	return res;
+    uint64_t size = (countBits - 1) / N;
+    bignum *res = new_bignum(size + 1);
+    uint64_t currentArrayFrom = from->size - 1;
+    uint64_t currentBitFrom = calculateHighestBit(from->array[from->size - 1]);
+    uint64_t currentArraySet = (countBits - 1) / N;
+    uint64_t currentBitSet = (countBits - 1) % N;
+    uint64_t  counter = countBits - 1;
+    while(1)
+    {
+        if (from->array[currentArrayFrom] & 1ULL << currentBitFrom)
+        {
+            res->array[currentArraySet] |= 1ULL << currentBitSet;
+        }
+        if (currentBitFrom == 0)
+        {
+            currentArrayFrom--;
+            currentBitFrom = 31;
+        }
+        else
+        {
+            currentBitFrom--;
+        }
+        if (currentBitSet == 0)
+        {
+            currentArraySet--;
+            currentBitSet = 31;
+        }
+        else
+        {
+            currentBitSet--;
+        }
+        if (counter == 0) {
+            break;
+        }
+        counter--;
+    }
+    return res;
 }
