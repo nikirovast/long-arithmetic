@@ -600,32 +600,21 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
     uint64_t xnp1Bits = xnp1->size >= 2 ? (xnp1->size - 1) * N + calculateHighestBit(xnp1->array[xnp1->size - 1] + 1)
                                         : calculateHighestBit(xnp1->array[0]) + 1;
     uint64_t diff = xnBits - xnp1Bits;
-    bignum *temp = new_bignum(1);
-    temp->array[0] = 1;
     bignum *temp2;
-    bignum *fit = new_bignum(0);
-    bignum *fitInitial = new_bignum(1);
-    fit->array[0] = 0;
     while (diff >= 0) {
         bignum *toAdd = new_bignum(1);
         toAdd->array[0] = 1;
         bitShiftLeft(toAdd, diff);
         temp2 = mul(xnp1, toAdd);
-        memcpy(fitInitial->array, fit->array, (fit->size) * sizeof(elem_size_t));
-        fitInitial->size = fit->size;
-        fit = add(fit, temp2);
-        int compare = compareBignum(xn, fit);
+        int compare = compareBignum(xn, temp2);
         if (compare < 1) {
             res = add(res, toAdd);
+            xn = sub(xn, temp2);
             //freeBigNum(fitInitial);
             //fitInitial = new_bignum(1);
             if (compare == 0) {
                 break;
             }
-        }
-        else {
-            free(fit);
-            fit = fitInitial;
         }
         if (diff == 0) {
             break;
@@ -633,8 +622,6 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
         diff--;
     }
     free(temp2);
-    free(fit);
-    free(temp);
     /*while (diff > 1)
     {
         bignum *tmp = new_bignum(1);
