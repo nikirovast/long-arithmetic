@@ -109,12 +109,13 @@ int main(int argc, char **argv) {
             }
         }
     }
-    uint64_t n = strtoull(argv[1], NULL, 0);
+    // + 1 because of a known bug of getops_long changing the order of arguments
+    uint64_t n = strtoull(argv[1 + hexadecimal], NULL, 0);
     if (errno == ERANGE) {
         fprintf(stderr, "the given number can not be represented, please pick a number <= %lu", UINT64_MAX);
         return 1;
     }
-    if (n == 0ULL || *argv[1] == '-') {
+    if (n == 0ULL || *argv[1 + hexadecimal] == '-') {
         fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
         return 1;
     }
@@ -133,17 +134,22 @@ int main(int argc, char **argv) {
     struct timespec end;
     clock_gettime(CLOCK_MONOTONIC, &end);
     printf("Took %f seconds to calculate xn and xnp1\n", time_s(start, end));
-    printf("xn = %s, xnp1 = %s", xn, xnp1);
+    printf("xn = %s\nxnp1 = %s", xn, xnp1);
     // double sqrt2 = 1 + (double)res->xn->array[0]/(double)res->xnp1->array[0];
     bignum *oper = new_bignum(1);
     *oper->array = 10;
-    for (uint64_t i = 0; i < n; i++)
-    {
+    for (uint64_t i = 0; i < n; i++) {
         res->xn = mul(res->xn, oper);
     }
     // uint64_t s = res->xn->array[0] / res->xnp1->array[0];
     //bignum *div = div2bignums(res->xn, res->xnp1);
-    //char *final = decToPrint(div);
+    /*if (hexadecimal) {
+      char *final = hexToPrint(div);
+     }
+    else {
+        char *final = decToPrint(div);
+    }
+     */
     //printf("Result after division: 1,%s\n", final);
     //free(final);
     freeMatrix(res);
