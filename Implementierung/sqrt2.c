@@ -1,6 +1,4 @@
-#include "assert.h"
 #include "errno.h"
-#include "math.h"
 #include "time.h"
 #include <getopt.h>
 #include <stdint.h>
@@ -24,17 +22,24 @@ struct bignum
     elem_size_t *array;
 };
 
+/**
+ * Calculate elapsed time
+ */
+double time_s(struct timespec s, struct timespec e) {
+    return (e.tv_sec - s.tv_sec) + (e.tv_nsec - s.tv_nsec) * 1e-9;
+}
+
 extern void sum(uint64_t n, bignum *xn, bignum *xnp1);
 bignum *mul(bignum *xn, bignum *xnp1);
 void zeroJustify(bignum *n);
-void arrayShift(bignum *n, int count);
+void arrayShift(bignum *n, uint64_t count);
 int compareBignum(bignum *xn, bignum *xnp1);
 bignum *div2bignums(bignum *xn, bignum *xnp1);
 bignum *add(bignum *xn, bignum *xnp1);
 bignum *sub(bignum *xn, bignum *xnp1);
 bignum *mul2num(elem_size_t x, elem_size_t y);
 matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2);
-matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit);
+matrix *matrixBinaryExponentiation(unsigned long long n, uint64_t highestBit);
 int calculateHighestBit(unsigned long long n);
 uint64_t convertAccToN(uint64_t numDigits);
 char *hexToPrint(bignum *a);
@@ -45,7 +50,7 @@ bignum *divideLongDivision(bignum *dividend, bignum *divisor);
 bignum *copy(bignum *from, int countBits);
 bignum *bitShiftRight(bignum *n, uint64_t count);
 bignum *bitShiftLeft(bignum *n, uint64_t count);
-bignum *addIntToBignum(bignum *n, int toAdd);
+bignum *addIntToBignum(bignum *n, uint64_t toAdd);
 matrix *matrixSimpleExponentiation(unsigned long long n);
 void freeMatrix(matrix *toFree);
 
@@ -74,58 +79,61 @@ struct matrix
     bignum *xnm1;
 };
 
-int main(int argc, char **argv)
-{
-      int hexadecimal = 0;
-      int c;
-      if (argc == 1 || argc > 3)
-      {
-          printUsage(argv);
-          return 1;
-      }
-      while (1)
-      {
-          int option_index = 0;
-          c = getopt_long(argc, argv, "hx", long_options, &option_index);
-          if (c == -1)
-          {
-              break;
-          }
-          switch (c)
-          {
-          case 'h': {
-              printUsage(argv);
-              return 1;
-          }
-          case 'x': {
-              hexadecimal = 1;
-              break;
-          }
-          default: {
-              fprintf(stderr, "Unknown option was used");
-              exit(1);
-          }
-          }
-      }
-      uint64_t n = strtoull(argv[1], NULL, 0);
-      if (errno == ERANGE)
-      {
-          fprintf(stderr, "the given number can not be represented, please pick a number < %llu", UINT64_MAX);
-          return 1;
-      }
-      if (n == 0ULL || *argv[1] == '-')
-      {
-          fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
-          return 1;
-      }
-      if (*argv[1] == '0') {
-          fprintf(stderr, "Given number begins with 0, enter another number 0 < number < %llu", UINT64_MAX);
-          return 1;
-      }
+int main(int argc, char **argv) {
+    int hexadecimal = 0;
+    int c;
+    if (argc == 1 || argc > 3) {
+        printUsage(argv);
+        return 1;
+    }
+    while (1) {
+        int option_index = 0;
+        c = getopt_long(argc, argv, "hx", long_options, &option_index);
+        if (c == -1) {
+            break;
+        }
+        switch (c) {
+            case 'h': {
+                printUsage(argv);
+                return 1;
+            }
+            case 'x': {
+                hexadecimal = 1;
+                break;
+            }
+            default: {
+                fprintf(stderr, "Unknown option was used");
+                exit(1);
+            }
+        }
+    }
+    uint64_t n = strtoull(argv[1], NULL, 0);
+    if (errno == ERANGE) {
+        fprintf(stderr, "the given number can not be represented, please pick a number < %llu", UINT64_MAX);
+        return 1;
+    }
+    if (n == 0ULL || *argv[1] == '-') {
+        fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
+        return 1;
+    }
+    if (*argv[1] == '0') {
+        fprintf(stderr, "Given number begins with 0, enter a number 0 < number < %llu", UINT64_MAX);
+        return 1;
+    }
+
     int op = convertAccToN(n);
-    matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
+    struct timespec start;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    //matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
+    matrix *res = matrixSimpleExponentiation(op);
+    char *xn = decToPrint(res->xn);
+    char *xnp1 = decToPrint(res->xnp1);
+    struct timespec end;
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    printf("Took %f seconds to calculate xn and xnp1\n", time_s(start, end));
+    printf("xn = %s, xnp1 = %s", xn, xnp1);
     // double sqrt2 = 1 + (double)res->xn->array[0]/(double)res->xnp1->array[0];
-    bignum *oper = new_bignum(1);
+    /*bignum *oper = new_bignum(1);
     *oper->array = 10;
     for (int i = 0; i < n; i++)
     {
@@ -133,10 +141,9 @@ int main(int argc, char **argv)
     }
     // uint64_t s = res->xn->array[0] / res->xnp1->array[0];
     bignum *div = div2bignums(res->xn, res->xnp1);
-    //bignum *div = divideLongDivision(res->xn, res->xnp1);
-    char *final = decToPrint(div);
-    printf("1,%s\n", final);
-    free(final);
+    //char *final = decToPrint(div);
+    //printf("Result after division: 1,%s\n", final);
+    //free(final);
     freeMatrix(res);
     // printf("sqrt2:%f\n", sqrt2);
     // printf("Result int res5->xn->array[0]: %u and res5-xn->array[1]: %u", res5->xn->array[0], res5->xn->array[1]);
@@ -148,6 +155,7 @@ int main(int argc, char **argv)
  * Multiply two matrices.
  *
  */
+}
 
 void printUsage(char **argv)
 {
@@ -195,15 +203,13 @@ matrix *matrixSimpleExponentiation(unsigned long long n)
     matrix->xn = new_bignum(1);
     matrix->xn->array[0] = 1;
     matrix->xnm1 = new_bignum(0);
-    // matrix->xnm1->array[0] = 0;
     struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
     if (matrixInitial == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixBinaryExp");
+        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixSimpleExp");
         exit(1);
     }
     matrixInitial->xnm1 = new_bignum(0);
-    // *(matrixInitial->xnm1->array) = 0;
     matrixInitial->xn = new_bignum(1);
     *(matrixInitial->xn->array) = 1;
     matrixInitial->xnp1 = new_bignum(1);
@@ -227,7 +233,7 @@ matrix *matrixSimpleExponentiation(unsigned long long n)
  *
  */
 
-matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit)
+matrix *matrixBinaryExponentiation(unsigned long long n, uint64_t highestBit)
 {
     struct matrix *matrix = malloc(3 * sizeof(bignum));
     if (matrix == NULL)
@@ -311,7 +317,7 @@ bignum *add(bignum *xn, bignum *xnp1)
     uint64_t size1 = xn->size;
     uint64_t size2 = xnp1->size;
     bignum *res = new_bignum(size2);
-    int i;
+    uint64_t i;
     elem_size_t carry = 0;
     for (i = 0; i < size1; i++)
     {
@@ -363,7 +369,7 @@ bignum *sub(bignum *xn, bignum *xnp1)
     uint64_t size2 = xnp1->size;
     bignum *res = new_bignum(sizeof(elem_size_t) * size1);
     res->size = size1;
-    int i;
+    uint64_t i;
     elem_size_t carry = 0;
     for (i = 0; i < size2; i++)
     {
@@ -666,7 +672,7 @@ int compareBignum(bignum *xn, bignum *xnp1)
     return 0;
 }
 
-void arrayShift(bignum *n, int count)
+void arrayShift(bignum *n, uint64_t count)
 {
     long i;
     elem_size_t *tmp = realloc(n->array, (n->size + count) * sizeof(elem_size_t));
@@ -1072,7 +1078,7 @@ bignum *bitShiftLeft(bignum *n, uint64_t count)
     return n;
 }
 
-bignum *addIntToBignum(bignum *n, int toAdd)
+bignum *addIntToBignum(bignum *n, uint64_t toAdd)
 {
     bignum *temp = new_bignum(1);
     temp->array[0] = toAdd;
