@@ -127,8 +127,8 @@ int main(int argc, char **argv) {
     uint64_t op = convertAccToN(n);
     struct timespec start;
     clock_gettime(CLOCK_MONOTONIC, &start);
-    //matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
-    matrix *res = matrixSimpleExponentiation(op);
+    matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
+    //matrix *res = matrixSimpleExponentiation(op);
     char *xn = decToPrint(res->xn);
     char *xnp1 = decToPrint(res->xnp1);
     struct timespec end;
