@@ -52,8 +52,16 @@ Offensichtlich gilt unter anderem:
 \begin{equation}
     x^{37} = x^{32} \cdot x^4 \cdot x^1
 \end{equation}
-Daraus ergibt sich, dass die bisher enstandene Zahl mit sich selbst $k$ mal multipliziert wird, wobei $k$ das höchstgesetzte Bit der binären Darstellung von $n$ ist, und falls an der $i$-ten Stelle eine 1 steht, wird $x^i$ mit dem bisher erreichten Ergebnis multiplziert, ansonsten weiter potenziert bis das letzte Bit abgearbeitet wurde. Am Ende ergibt sich genau das gleiche Ergebnis wie bei der normalen Exponentiation. In unserer Implementierung haben wir dieses Verfahren ein wenig angepasst, was in folgendem Abschnitt verdeutlicht wird. 
-\subsection{Die schnelle Exponentiation auf Matrizen}%
+Daraus ergibt sich, dass die bisher enstandene Zahl mit sich selbst $k$ mal multipliziert wird, wobei $k$ das höchstgesetzte Bit der binären Darstellung von $n$ ist, und falls an der $i$-ten Stelle eine $1$ steht, wird $x^i$ mit dem bisher erreichten Ergebnis multiplziert, ansonsten weiter potenziert bis das letzte Bit abgearbeitet wurde. Am Ende ergibt sich genau das gleiche Ergebnis wie bei der normalen Exponentiation. In unserer Implementierung haben wir dieses Verfahren angepasst, was in folgendem Abschnitt verdeutlicht wird. 
+\subsection{Übertragung der schnellen Exponentiation auf Matrizen}%
+Bevor wir uns in die Implementierung vertiefen, wollen wir anmerken, dass laut der Aufgabenstellung müssen wir lediglich die Exponentiation auf die 2x2 Blockmatrizen übertragen. Außerdem sind in allen Matrizen, die im Laufe der Exponetiation entstehen, nur $3$ unterschiedliche Werte vorhanden, weil $x^n$ $2$ immer mal vorkommt. Dies vereinfacht die durchzuführenden Operationen deutlich. 
+Wie im vorherigen Abschnitt schon erwähnt, haben wir das Verfahren leicht umgeändert: damit wir die Zweierpotenzen nicht speichern müssen, iterieren wir nun vom höchsten Bit ausgehend bis zum ersten. Dabei entspricht jede $1$ an der Bitstelle $i$ einer Quadrierung und Multiplikation direkt danach und jede $0$ lediglich einer Quadrierung. Das höchstgesetze Bit wir dabei übersprungen, da wir mit $x^0$ anfangen und die $1^2 = 1$ ist. Stattdessen wird $x^1$ geschrieben, die Iteration beginnt also erst beim vorletzten Bit.
+Um zu zeigen, dass das angepasste Verfahren das gleiche Ergebnis liefert, nehmen wir als Beispiel $n = 37$. Die Binärdarstellung von $37$ entspricht $100101$. Dann kann man $x^{37}$ als $Q Q QM Q QM$ darstellen wie oben beschrieben. Es gilt:
+\begin{equation}
+    x^{37} = (((((((x)^2)^2)^2) \cdot x)^2)^2) \cdot x
+\end{equation}
+Man braucht somit weniger Speicherplatz, weil hier nur die Matrix, wo das bisher erreichtes Ergebnis gespeichert wird, und die Anfangsmatrix $x^1$ für die Multiplikation gebraucht werden.
+Für die Exponentiation reichen nur zwei bigNum-Funktionen aus, nämlich Addition und Multiplikation, wobei diese in den zwei nächsten Abschnitten ausführlich erklärt werden.
 \subsection{Die Struktur, die uns erlaubt, die Zahlen mit beliebiger Genauigkeit zu speichern}%
 Da unser Hauptinteresse darin besteht, die Konstante mit hoher Genauigkeit zu berechnen, müssen wir die Werte von $x_n$ und $x_{n+1}$ bei großem n berechnen, was bedeutet, dass diese Zahlen möglicherweise nicht in das \textit{long} Format des Computerprotokolls passen. Um dies zu tun, speichern wir sie als ein Array von vorzeichenlosen 32-Bit-Zahlen, die jeweils 32 Bits der binären Darstellung der Zahl enthalten. Um weitere Berechnungen bequemer durchzuführen, speichern wir unsere Zahl in einem Array von links nach rechts, d.h. das Null-Element des Arrays enthält die niedrigsten 32 Bits.\\
 Wir wollen zum Beispiel die Zahl \textit{18446744073709558563} in unserer Struktur behalten. Die Darstellung im Binärsystem sieht wie folgt aus: \\

@@ -1,4 +1,6 @@
+#include "assert.h"
 #include "errno.h"
+#include "math.h"
 #include "time.h"
 #include <getopt.h>
 #include <stdint.h>
@@ -22,24 +24,17 @@ struct bignum
     elem_size_t *array;
 };
 
-/**
- * Calculate elapsed time
- */
-double time_s(struct timespec s, struct timespec e) {
-    return (e.tv_sec - s.tv_sec) + (e.tv_nsec - s.tv_nsec) * 1e-9;
-}
-
 extern void sum(uint64_t n, bignum *xn, bignum *xnp1);
 bignum *mul(bignum *xn, bignum *xnp1);
 void zeroJustify(bignum *n);
-void arrayShift(bignum *n, uint64_t count);
+void arrayShift(bignum *n, int count);
 int compareBignum(bignum *xn, bignum *xnp1);
 bignum *div2bignums(bignum *xn, bignum *xnp1);
 bignum *add(bignum *xn, bignum *xnp1);
 bignum *sub(bignum *xn, bignum *xnp1);
 bignum *mul2num(elem_size_t x, elem_size_t y);
 matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2);
-matrix *matrixBinaryExponentiation(unsigned long long n, uint64_t highestBit);
+matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit);
 int calculateHighestBit(unsigned long long n);
 uint64_t convertAccToN(uint64_t numDigits);
 char *hexToPrint(bignum *a);
@@ -50,7 +45,7 @@ bignum *divideLongDivision(bignum *dividend, bignum *divisor);
 bignum *copy(bignum *from, int countBits);
 bignum *bitShiftRight(bignum *n, uint64_t count);
 bignum *bitShiftLeft(bignum *n, uint64_t count);
-bignum *addIntToBignum(bignum *n, uint64_t toAdd);
+bignum *addIntToBignum(bignum *n, int toAdd);
 matrix *matrixSimpleExponentiation(unsigned long long n);
 void freeMatrix(matrix *toFree);
 
@@ -133,7 +128,7 @@ int main(int argc, char **argv) {
     printf("Took %f seconds to calculate xn and xnp1\n", time_s(start, end));
     printf("xn = %s, xnp1 = %s", xn, xnp1);
     // double sqrt2 = 1 + (double)res->xn->array[0]/(double)res->xnp1->array[0];
-    /*bignum *oper = new_bignum(1);
+    bignum *oper = new_bignum(1);
     *oper->array = 10;
     for (int i = 0; i < n; i++)
     {
@@ -155,7 +150,6 @@ int main(int argc, char **argv) {
  * Multiply two matrices.
  *
  */
-}
 
 void printUsage(char **argv)
 {
@@ -203,13 +197,15 @@ matrix *matrixSimpleExponentiation(unsigned long long n)
     matrix->xn = new_bignum(1);
     matrix->xn->array[0] = 1;
     matrix->xnm1 = new_bignum(0);
+    // matrix->xnm1->array[0] = 0;
     struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
     if (matrixInitial == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixSimpleExp");
+        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixBinaryExp");
         exit(1);
     }
     matrixInitial->xnm1 = new_bignum(0);
+    // *(matrixInitial->xnm1->array) = 0;
     matrixInitial->xn = new_bignum(1);
     *(matrixInitial->xn->array) = 1;
     matrixInitial->xnp1 = new_bignum(1);
@@ -233,7 +229,7 @@ matrix *matrixSimpleExponentiation(unsigned long long n)
  *
  */
 
-matrix *matrixBinaryExponentiation(unsigned long long n, uint64_t highestBit)
+matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit)
 {
     struct matrix *matrix = malloc(3 * sizeof(bignum));
     if (matrix == NULL)
@@ -317,7 +313,7 @@ bignum *add(bignum *xn, bignum *xnp1)
     uint64_t size1 = xn->size;
     uint64_t size2 = xnp1->size;
     bignum *res = new_bignum(size2);
-    uint64_t i;
+    int i;
     elem_size_t carry = 0;
     for (i = 0; i < size1; i++)
     {
@@ -369,7 +365,7 @@ bignum *sub(bignum *xn, bignum *xnp1)
     uint64_t size2 = xnp1->size;
     bignum *res = new_bignum(sizeof(elem_size_t) * size1);
     res->size = size1;
-    uint64_t i;
+    int i;
     elem_size_t carry = 0;
     for (i = 0; i < size2; i++)
     {
@@ -672,7 +668,7 @@ int compareBignum(bignum *xn, bignum *xnp1)
     return 0;
 }
 
-void arrayShift(bignum *n, uint64_t count)
+void arrayShift(bignum *n, int count)
 {
     long i;
     elem_size_t *tmp = realloc(n->array, (n->size + count) * sizeof(elem_size_t));
@@ -1078,7 +1074,7 @@ bignum *bitShiftLeft(bignum *n, uint64_t count)
     return n;
 }
 
-bignum *addIntToBignum(bignum *n, uint64_t toAdd)
+bignum *addIntToBignum(bignum *n, int toAdd)
 {
     bignum *temp = new_bignum(1);
     temp->array[0] = toAdd;
