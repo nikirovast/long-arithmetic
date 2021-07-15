@@ -204,7 +204,6 @@ matrix *matrixSimpleExponentiation(uint64_t n)
     matrix->xn = new_bignum(1);
     matrix->xn->array[0] = 1;
     matrix->xnm1 = new_bignum(0);
-    // matrix->xnm1->array[0] = 0;
     struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
     if (matrixInitial == NULL)
     {
@@ -212,7 +211,6 @@ matrix *matrixSimpleExponentiation(uint64_t n)
         exit(1);
     }
     matrixInitial->xnm1 = new_bignum(0);
-    // *(matrixInitial->xnm1->array) = 0;
     matrixInitial->xn = new_bignum(1);
     *(matrixInitial->xn->array) = 1;
     matrixInitial->xnp1 = new_bignum(1);
@@ -458,19 +456,14 @@ bignum *mul(bignum *xn, bignum *xnp1)
         bignum *b = new_bignum(bNewSize);
 
         // we need to write in b the second part of xn
-        // void *memcpy(void *dest, const void *src, std::size_t count);
-        // memcpy(b->array, xn->array, bNewSize * sizeof(elem_size_t));
         b->array = xn->array;
 
         bignum *a = new_bignum(aNewSize);
-        // memcpy(a->array, (xn->array + bNewSize), aNewSize * sizeof(elem_size_t));
         a->array = xn->array + bNewSize;
         bignum *c = new_bignum(cNewSize);
         c->array = xnp1->array + dNewSize;
-        // memcpy(c->array, (xnp1->array + dNewSize), cNewSize * sizeof(elem_size_t));
 
         bignum *d = new_bignum(dNewSize);
-        // memcpy(d->array, xnp1->array, dNewSize * sizeof(elem_size_t));
         d->array = xnp1->array;
         bignum *ac = mul(a, c);
         bignum *bd = mul(b, d);
@@ -488,43 +481,9 @@ bignum *mul(bignum *xn, bignum *xnp1)
         if (ac->size != 0)
         {
             arrayShift(ac, bNewSize + dNewSize);
-            /* elem_size_t *tmp = realloc(ac->array, sizeof(elem_size_t) * (ac->size + 2));
-            if (tmp == NULL)
-            {
-                fprintf(stderr, "Couldn't reallocate memory for a shift in sum");
-                exit(1);
-            }
-            else
-            {
-                ac->array = tmp;
-                ac->size += 2;
-                for (int i = ac->size - 1; i > 1; i--)
-                {
-                    *(ac->array + i) = *(ac->array + i - 2);
-                }
-                *(ac->array) = 0;
-                *(ac->array + 1) = 0;
-            }*/
         }
         if (ad_add_bc->size != 0)
         {
-            /* elem_size_t *tmp = realloc(ad_add_bc->array, sizeof(elem_size_t) * (ad_add_bc->size + 1));
-            if (tmp == NULL)
-            {
-                fprintf(stderr, "Couldn't allocate memory for a zero shift in sum");
-                exit(1);
-            }
-            else
-            {
-                ad_add_bc->array = tmp;
-                ad_add_bc->size += 1;
-
-                for (int i = ad_add_bc->size - 1; i > 0; i--)
-                {
-                    *(ad_add_bc->array + i) = *(ad_add_bc->array + i - 1);
-                }
-                *(ad_add_bc->array) = 0;
-            }*/
             arrayShift(ad_add_bc, bNewSize);
         }
         bignum *res = add(add(ac, ad_add_bc), bd);
@@ -636,23 +595,6 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
         diff--;
     }
     free(temp2);
-    /*while (diff > 1)
-    {
-        bignum *tmp = new_bignum(1);
-        tmp->array[0] = 1;
-
-        bitShiftLeft(tmp, diff - 1);
-        res = add(res, tmp);
-        bignum *july = mul(xnp1, tmp);
-        xn = sub(xn, july);
-        // july = mul(july, temp2);
-        xnBits = xn->size >= 2 ? (xn->size - 2) * N + calculateHighestBit(xn->array[xn->size - 1])
-                               : calculateHighestBit(xn->array[0]);
-        xnp1Bits = xnp1->size >= 2 ? (xnp1->size - 2) * N + calculateHighestBit(xnp1->array[xnp1->size - 1])
-                                   : calculateHighestBit(xnp1->array[0]);
-        diff = xnBits - xnp1Bits;
-    }
-     */
     return res;
 }
 
