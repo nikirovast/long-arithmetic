@@ -2,7 +2,7 @@
 #include "errno.h"
 #include "math.h"
 #include "time.h"
-//#include <getopt.h>
+#include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +17,7 @@
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
-// static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
+static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
 struct bignum
 {
     size_t size;
@@ -76,7 +76,7 @@ struct matrix
 
 int main(int argc, char **argv)
 {
-    /*  int hexadecimal = 0;
+      int hexadecimal = 0;
       int c;
       if (argc == 1 || argc > 3)
       {
@@ -110,15 +110,18 @@ int main(int argc, char **argv)
       uint64_t n = strtoull(argv[1], NULL, 0);
       if (errno == ERANGE)
       {
-          fprintf(stderr, "the given number can not be represented, please pick a number < UINT64_MAX");
+          fprintf(stderr, "the given number can not be represented, please pick a number < %llu", UINT64_MAX);
           return 1;
       }
       if (n == 0ULL || *argv[1] == '-')
       {
           fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
           return 1;
-      }*/
-    int n = 1000;
+      }
+      if (*argv[1] == '0') {
+          fprintf(stderr, "Given number begins with 0, enter another number 0 < number < %llu", UINT64_MAX);
+          return 1;
+      }
     int op = convertAccToN(n);
     matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
     // double sqrt2 = 1 + (double)res->xn->array[0]/(double)res->xnp1->array[0];
