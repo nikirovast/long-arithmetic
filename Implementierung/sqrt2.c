@@ -61,14 +61,14 @@ bignum *new_bignum(size_t size)
     bignum *res = malloc(sizeof(bignum));
     if (res == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for a struct");
+        fprintf(stderr, "Couldn't allocate memory for a struct\n");
         exit(1);
     }
     res->size = size;
     res->array = malloc(sizeof(elem_size_t) * size);
     if (res->array == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for an array");
+        fprintf(stderr, "Couldn't allocate memory for an array\n");
         exit(1);
     }
     return res;
@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
                 break;
             }
             default: {
-                fprintf(stderr, "Unknown option was used");
+                fprintf(stderr, "Unknown option was used\n");
                 exit(1);
             }
         }
@@ -112,15 +112,15 @@ int main(int argc, char **argv) {
     // + 1 because of a known bug of getops_long changing the order of arguments
     uint64_t n = strtoull(argv[1 + hexadecimal], NULL, 0);
     if (errno == ERANGE) {
-        fprintf(stderr, "the given number can not be represented, please pick a number <= %lu", UINT64_MAX);
+        fprintf(stderr, "the given number can not be represented, please pick a number <= %lu\n", UINT64_MAX);
         return 1;
     }
     if (n == 0ULL || *argv[1 + hexadecimal] == '-') {
-        fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
+        fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number\n");
         return 1;
     }
     if (*argv[1] == '0') {
-        fprintf(stderr, "Given number begins with 0, enter a number 0 < number <= %lu", UINT64_MAX);
+        fprintf(stderr, "Given number begins with 0, enter a number 0 < number <= %lu\n", UINT64_MAX);
         return 1;
     }
 
@@ -168,7 +168,7 @@ void printUsage(char **argv)
 {
     printf("Usage: %s <number of digits> \n", argv[0]);
     printf("-x: sets output numeral system to hexadecimal, default: decimal\n");
-    printf("-h|--help: for usage help");
+    printf("-h|--help: for usage help\n");
 }
 
 matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
@@ -176,7 +176,7 @@ matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
     matrix *res = malloc(3 * sizeof(struct bignum));
     if (res == 0)
     {
-        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixMul");
+        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixMul\n");
         exit(1);
     }
     bignum *tmp1 = mul(matrix1->xnm1, matrix2->xnm1);
@@ -202,7 +202,7 @@ matrix *matrixSimpleExponentiation(uint64_t n)
     struct matrix *matrix = malloc(3 * sizeof(bignum));
     if (matrix == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for a matrix");
+        fprintf(stderr, "Couldn't allocate memory for a matrix\n");
         exit(1);
     }
     matrix->xnp1 = new_bignum(1);
@@ -213,7 +213,7 @@ matrix *matrixSimpleExponentiation(uint64_t n)
     struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
     if (matrixInitial == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixBinaryExp");
+        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixBinaryExp\n");
         exit(1);
     }
     matrixInitial->xnm1 = new_bignum(0);
@@ -245,7 +245,7 @@ matrix *matrixBinaryExponentiation(uint64_t n, uint64_t highestBit)
     struct matrix *matrix = malloc(3 * sizeof(bignum));
     if (matrix == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for a matrix");
+        fprintf(stderr, "Couldn't allocate memory for a matrix\n");
         exit(1);
     }
     matrix->xnp1 = new_bignum(1);
@@ -257,7 +257,7 @@ matrix *matrixBinaryExponentiation(uint64_t n, uint64_t highestBit)
     struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
     if (matrixInitial == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixBinaryExp");
+        fprintf(stderr, "Couldn't allocate memory for a matrix in matrixBinaryExp\n");
         exit(1);
     }
     matrixInitial->xnm1 = new_bignum(1);
@@ -350,7 +350,7 @@ bignum *add(bignum *xn, bignum *xnp1)
         elem_size_t *tmp = realloc(res->array, sizeof(elem_size_t) * (size2 + 1));
         if (tmp == NULL)
         {
-            fprintf(stderr, "Couldn't reallocate memory for a carry in sum");
+            fprintf(stderr, "Couldn't reallocate memory for a carry in sum\n");
             exit(1);
         }
         else
@@ -433,7 +433,7 @@ bignum *mul(bignum *xn, bignum *xnp1)
         bignum *res = malloc(sizeof(*xn));
         if (res == 0)
         {
-            fprintf(stderr, "Couldn't allocate memory for a zero res in mul");
+            fprintf(stderr, "Couldn't allocate memory for a zero res in mul\n");
             exit(1);
         }
         res->size = 0;
@@ -521,7 +521,7 @@ bignum *mul2num(elem_size_t x, elem_size_t y)
         bignum *res = malloc(sizeof(*res));
         if (res == 0)
         {
-            fprintf(stderr, "Couldn't allocate memory for a zero res in mul");
+            fprintf(stderr, "Couldn't allocate memory for a zero res in mul\n");
             exit(1);
         }
         res->size = 0;
@@ -639,7 +639,7 @@ void arrayShift(bignum *n, uint64_t count)
     elem_size_t *tmp = realloc(n->array, (n->size + count) * sizeof(elem_size_t));
     if (tmp == NULL)
     {
-        fprintf(stderr, "Couldn't reallocate memory for a n in arrayShift");
+        fprintf(stderr, "Couldn't reallocate memory for a n in arrayShift\n");
         exit(1);
     }
     else
@@ -698,7 +698,7 @@ char *hexToPrint(bignum *a)
         char *zero = malloc(2);
         if (zero == NULL)
         {
-            fprintf(stderr, "Couldn't allocate memory for a zerostring");
+            fprintf(stderr, "Couldn't allocate memory for a zerostring\n");
             exit(1);
         }
         *zero = '0';
@@ -715,7 +715,7 @@ char *hexToPrint(bignum *a)
     char *tmp = malloc(9);
     if (tmp == 0)
     {
-        fprintf(stderr, "Couldn't allocate memory for a tmp");
+        fprintf(stderr, "Couldn't allocate memory for a tmp\n");
         exit(1);
     }
     // always add plus 1 byte because snprintf always adds and of the string, but we overwrite it then
@@ -730,7 +730,7 @@ char *hexToPrint(bignum *a)
     str = string = malloc(len);
     if (string == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for a string in hexPrint");
+        fprintf(stderr, "Couldn't allocate memory for a string in hexPrint\n");
         exit(1);
     }
     snprintf(str, addLen + 1, "%x", first);
@@ -806,7 +806,7 @@ char *decToPrint(bignum *a)
         char *zero = malloc(2);
         if (zero == NULL)
         {
-            fprintf(stderr, "Couldn't allocate memory for a zerostring");
+            fprintf(stderr, "Couldn't allocate memory for a zerostring\n");
             exit(1);
         }
         *zero = '0';
@@ -819,7 +819,7 @@ char *decToPrint(bignum *a)
     decArray = malloc(size * sizeof(elem_size_t));
     if (decArray == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for decArray in decToPrint");
+        fprintf(stderr, "Couldn't allocate memory for decArray in decToPrint\n");
         exit(1);
     }
     elem_size_t *array = a->array;
@@ -858,7 +858,7 @@ char *decToPrint(bignum *a)
     char *toCheck = malloc(11);
     if (toCheck == 0)
     {
-        fprintf(stderr, "Couldn't allocate memory for a tmp");
+        fprintf(stderr, "Couldn't allocate memory for a tmp\n");
         exit(1);
     }
     // always add plus 1 byte because snprintf always adds and of the string, but we overwrite it then
@@ -871,7 +871,7 @@ char *decToPrint(bignum *a)
 
     if (string == NULL)
     {
-        fprintf(stderr, "Couldn't allocate memory for string in decToPrint");
+        fprintf(stderr, "Couldn't allocate memory for string in decToPrint\n");
         exit(1);
     }
     snprintf(str, addLen + 1, "%u", temp);
