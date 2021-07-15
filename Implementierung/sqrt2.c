@@ -2,7 +2,7 @@
 #include "errno.h"
 #include "math.h"
 #include "time.h"
-#include <getopt.h>
+//#include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,12 +12,13 @@
 #define N 32
 #define ELEM_SIZE_MAX UINT32_MAX
 #define LOG2_10 3.3
+#define LOG2_16 4
 #define LOG10_2 0.3
 #define POWER10_9 1000000000
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
-static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
+// static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
 struct bignum
 {
     size_t size;
@@ -36,17 +37,17 @@ bignum *mul2num(elem_size_t x, elem_size_t y);
 matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2);
 matrix *matrixBinaryExponentiation(unsigned long long n, int highestBit);
 int calculateHighestBit(unsigned long long n);
-uint64_t convertAccToN(uint64_t numDigits);
+uint64_t convertAccToN(uint64_t numDigits, int flag);
 char *hexToPrint(bignum *a);
 char *decToPrint(bignum *a);
 void printUsage(char **argv);
 void freeBigNum(bignum *toFree);
-bignum *divideLongDivision(bignum *dividend, bignum *divisor);
 bignum *copy(bignum *from, int countBits);
 bignum *bitShiftRight(bignum *n, uint64_t count);
 bignum *bitShiftLeft(bignum *n, uint64_t count);
 bignum *addIntToBignum(bignum *n, int toAdd);
 matrix *matrixSimpleExponentiation(unsigned long long n);
+char *tryAndHope(bignum *a, uint64_t number);
 void freeMatrix(matrix *toFree);
 
 bignum *new_bignum(size_t size)
@@ -76,53 +77,55 @@ struct matrix
 
 int main(int argc, char **argv)
 {
-      int hexadecimal = 0;
-      int c;
-      if (argc == 1 || argc > 3)
-      {
-          printUsage(argv);
-          return 1;
-      }
-      while (1)
-      {
-          int option_index = 0;
-          c = getopt_long(argc, argv, "hx", long_options, &option_index);
-          if (c == -1)
-          {
-              break;
-          }
-          switch (c)
-          {
-          case 'h': {
-              printUsage(argv);
-              return 1;
-          }
-          case 'x': {
-              hexadecimal = 1;
-              break;
-          }
-          default: {
-              fprintf(stderr, "Unknown option was used");
-              exit(1);
-          }
-          }
-      }
-      uint64_t n = strtoull(argv[1], NULL, 0);
-      if (errno == ERANGE)
-      {
-          fprintf(stderr, "the given number can not be represented, please pick a number < %llu", UINT64_MAX);
-          return 1;
-      }
-      if (n == 0ULL || *argv[1] == '-')
-      {
-          fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
-          return 1;
-      }
-      if (*argv[1] == '0') {
-          fprintf(stderr, "Given number begins with 0, enter another number 0 < number < %llu", UINT64_MAX);
-          return 1;
-      }
-    int op = convertAccToN(n);
+    // int hexadecimal = 0;
+    // int c;
+    // if (argc == 1 || argc > 3)
+    //{
+    //    printUsage(argv);
+    //    return 1;
+    //}
+    // while (1)
+    //{
+    //    int option_index = 0;
+    //    c = getopt_long(argc, argv, "hx", long_options, &option_index);
+    //    if (c == -1)
+    //    {
+    //        break;
+    //    }
+    //    switch (c)
+    //    {
+    //    case 'h': {
+    //        printUsage(argv);
+    //        return 1;
+    //    }
+    //    case 'x': {
+    //        hexadecimal = 1;
+    //        break;
+    //    }
+    //    default: {
+    //        fprintf(stderr, "Unknown option was used");
+    //        exit(1);
+    //    }
+    //    }
+    //}
+    // uint64_t n = strtoull(argv[1], NULL, 0);
+    // if (errno == ERANGE)
+    //{
+    //    fprintf(stderr, "the given number can not be represented, please pick a number < %llu", UINT64_MAX);
+    //    return 1;
+    //}
+    // if (n == 0ULL || *argv[1] == '-')
+    //{
+    //    fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
+    //    return 1;
+    //}
+    // if (*argv[1] == '0')
+    //{
+    //    fprintf(stderr, "Given number begins with 0, enter another number 0 < number < %llu", UINT64_MAX);
+    //    return 1;
+    //}
+    int n = 1000;
+    int op = convertAccToN(n, 0);
     matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
     // double sqrt2 = 1 + (double)res->xn->array[0]/(double)res->xnp1->array[0];
     bignum *oper = new_bignum(1);
@@ -133,13 +136,14 @@ int main(int argc, char **argv)
     }
     // uint64_t s = res->xn->array[0] / res->xnp1->array[0];
     bignum *div = div2bignums(res->xn, res->xnp1);
-    //bignum *div = divideLongDivision(res->xn, res->xnp1);
+    // bignum *div = divideLongDivision(res->xn, res->xnp1);
     char *final = decToPrint(div);
+    char *hope = tryAndHope(div, n);
     printf("1,%s\n", final);
     free(final);
     freeMatrix(res);
     // printf("sqrt2:%f\n", sqrt2);
-    // printf("Result int res5->xn->array[0]: %u and res5-xn->array[1]: %u", res5->xn->array[0], res5->xn->array[1]);
+    // printf("Result int res5->xn->array[0]: %u and res5-xn->array[1]: %u", res5->xn->array<[0], res5->xn->array[1]);
     return 0;
 }
 
@@ -474,43 +478,9 @@ bignum *mul(bignum *xn, bignum *xnp1)
         if (ac->size != 0)
         {
             arrayShift(ac, bNewSize + dNewSize);
-            /* elem_size_t *tmp = realloc(ac->array, sizeof(elem_size_t) * (ac->size + 2));
-            if (tmp == NULL)
-            {
-                fprintf(stderr, "Couldn't reallocate memory for a shift in sum");
-                exit(1);
-            }
-            else
-            {
-                ac->array = tmp;
-                ac->size += 2;
-                for (int i = ac->size - 1; i > 1; i--)
-                {
-                    *(ac->array + i) = *(ac->array + i - 2);
-                }
-                *(ac->array) = 0;
-                *(ac->array + 1) = 0;
-            }*/
         }
         if (ad_add_bc->size != 0)
         {
-            /* elem_size_t *tmp = realloc(ad_add_bc->array, sizeof(elem_size_t) * (ad_add_bc->size + 1));
-            if (tmp == NULL)
-            {
-                fprintf(stderr, "Couldn't allocate memory for a zero shift in sum");
-                exit(1);
-            }
-            else
-            {
-                ad_add_bc->array = tmp;
-                ad_add_bc->size += 1;
-
-                for (int i = ad_add_bc->size - 1; i > 0; i--)
-                {
-                    *(ad_add_bc->array + i) = *(ad_add_bc->array + i - 1);
-                }
-                *(ad_add_bc->array) = 0;
-            }*/
             arrayShift(ad_add_bc, bNewSize);
         }
         bignum *res = add(add(ac, ad_add_bc), bd);
@@ -601,44 +571,28 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
                                         : calculateHighestBit(xnp1->array[0]) + 1;
     uint64_t diff = xnBits - xnp1Bits;
     bignum *temp2;
-    while (diff >= 0) {
+    while (diff >= 0)
+    {
         bignum *toAdd = new_bignum(1);
         toAdd->array[0] = 1;
         bitShiftLeft(toAdd, diff);
         temp2 = mul(xnp1, toAdd);
         int compare = compareBignum(xn, temp2);
-        if (compare < 1) {
+        if (compare < 1)
+        {
             res = add(res, toAdd);
             xn = sub(xn, temp2);
-            //freeBigNum(fitInitial);
-            //fitInitial = new_bignum(1);
-            if (compare == 0) {
+            if (compare == 0)
+            {
                 break;
             }
         }
-        if (diff == 0) {
+        if (diff == 0)
+        {
             break;
         }
         diff--;
     }
-    free(temp2);
-    /*while (diff > 1)
-    {
-        bignum *tmp = new_bignum(1);
-        tmp->array[0] = 1;
-
-        bitShiftLeft(tmp, diff - 1);
-        res = add(res, tmp);
-        bignum *july = mul(xnp1, tmp);
-        xn = sub(xn, july);
-        // july = mul(july, temp2);
-        xnBits = xn->size >= 2 ? (xn->size - 2) * N + calculateHighestBit(xn->array[xn->size - 1])
-                               : calculateHighestBit(xn->array[0]);
-        xnp1Bits = xnp1->size >= 2 ? (xnp1->size - 2) * N + calculateHighestBit(xnp1->array[xnp1->size - 1])
-                                   : calculateHighestBit(xnp1->array[0]);
-        diff = xnBits - xnp1Bits;
-    }
-     */
     return res;
 }
 
@@ -705,8 +659,10 @@ void zeroJustify(bignum *n)
  *
  */
 
-uint64_t convertAccToN(uint64_t numDigits)
+uint64_t convertAccToN(uint64_t numDigits, int flag)
 {
+    if (flag)
+        return 2 + (LOG2_16 / 2) * numDigits;
     return 2 + (LOG2_10 / 2) * numDigits;
 }
 
@@ -923,13 +879,159 @@ char *decToPrint(bignum *a)
         }
     }
     *str = '\0';
-    // free(decArray);
+    free(decArray);
     return string;
+}
+
+elem_size_t *mul16(elem_size_t *array, uint64_t *size)
+{
+    uint64_t tmp = 0;
+    uint64_t max = 16;
+    uint64_t size2 = *size;
+    for (int i = 0; i < *size; i++)
+    {
+        *(array + i) = (tmp += *(array + i) * max) % POWER10_9;
+        tmp /= POWER10_9;
+    }
+    while (tmp)
+    {
+        (*size)++;
+        size2++;
+        array = realloc(array, (size2) * sizeof(elem_size_t));
+        *(array + *size - 1) = tmp % POWER10_9;
+        tmp /= POWER10_9;
+    }
+    return array;
+}
+int countBits(elem_size_t *array, uint64_t *size)
+{
+    char *toCheck = malloc(11);
+    if (toCheck == 0)
+    {
+        fprintf(stderr, "Couldn't allocate memory for a tmp");
+        exit(1);
+    }
+    uint64_t size2 = *size - 1;
+    uint16_t addlen = snprintf(toCheck, 11, "%u", *(array + size2));
+    uint64_t bits = addlen;
+    free(toCheck);
+    if (size2 == 0)
+    {
+        return bits;
+    }
+    size2--;
+    while (1)
+    {
+        if (*(array + size2) == 1000000000)
+        {
+            bits += 10;
+        }
+        else
+        {
+            bits += 9;
+        }
+        if (size2 != 0)
+        {
+            size2--;
+        }
+        else
+        {
+            break;
+        }
+    }
+    return bits;
+}
+char *tryAndHope(bignum *a, uint64_t number)
+{
+    uint64_t count = a->size;
+    if (count == 0)
+    {
+        char *zero = malloc(2);
+        if (zero == NULL)
+        {
+            fprintf(stderr, "Couldn't allocate memory for a zerostring");
+            exit(1);
+        }
+        *zero = '0';
+        *(zero + 1) = 0;
+        return zero;
+    }
+    uint64_t size = count * LOG10_2 * 32 / 9 + 1;
+    count--;
+    elem_size_t *decArray;
+    decArray = malloc(size * sizeof(elem_size_t));
+    if (decArray == NULL)
+    {
+        fprintf(stderr, "Couldn't allocate memory for decArray in decToPrint");
+        exit(1);
+    }
+    elem_size_t *array = a->array;
+    *decArray = 0;
+    size = 1;
+    uint64_t tmp = *(array + count);
+    if (tmp != 0)
+    {
+        addToPrint(decArray, &size, tmp);
+    }
+    if (count > 0)
+    {
+
+        count--;
+        while (1)
+        {
+            mulToPrint(decArray, &size);
+            tmp = *(array + count);
+            if (tmp)
+            {
+                addToPrint(decArray, &size, tmp);
+            }
+            if (count == 0)
+            {
+                break;
+            }
+            else
+            {
+                count--;
+            }
+        }
+    }
+    char *finalResult, *strf;
+    finalResult = strf = malloc(number * 2 + 1);
+    uint64_t initBits = countBits(decArray, &size);
+    uint64_t j = 0;
+    while (j < number)
+    {
+        uint64_t saveSize = size;
+        uint64_t bits = countBits(decArray, &saveSize);
+        if (bits < initBits)
+            bits = initBits;
+        decArray = mul16(decArray, &size);
+        uint64_t newBits = countBits(decArray, &size);
+
+        uint64_t diff = newBits - bits;
+        char *toCheck = malloc(11);
+        if (toCheck == 0)
+        {
+            fprintf(stderr, "Couldn't allocate memory for a tmp");
+            exit(1);
+        }
+        uint16_t addlen = snprintf(toCheck, 11, "%u", *(decArray + size - 1));
+        addlen -= diff;
+        uint64_t power = 1;
+        power = pow(power, addlen);
+        elem_size_t temp = *(decArray + size - 1) / power;
+        strf += snprintf(strf, 2, "%01x", temp);
+        *(decArray + size - 1) %= power;
+        size = saveSize;
+        free(toCheck);
+        j++;
+    }
+    return finalResult;
 }
 
 /**
  *
- * Frees the memory
+ * Free the memory
  *
  */
 
@@ -954,65 +1056,6 @@ void freeMatrix(matrix *toFree)
         freeBigNum(toFree->xnm1);
         free(toFree);
     }
-}
-
-bignum *divideLongDivision(bignum *dividend, bignum *divisor)
-{
-    int highestBitDividend = calculateHighestBit(dividend->array[dividend->size - 1]);
-    int highestBitDivisor = calculateHighestBit(divisor->array[divisor->size - 1]);
-    uint64_t k = N * (dividend->size - 1) + highestBitDividend + 1;
-    uint64_t l = N * (divisor->size - 1) + highestBitDivisor + 1;
-    bignum *d = new_bignum(divisor->size);
-    bignum *r = copy(dividend, l - 1);
-    bignum *q = new_bignum(dividend->size);
-    bignum *arrayTemp = new_bignum(r->size);
-    for (int i = 0; i <= k - l; i++)
-    {
-        uint64_t arrayNumber = dividend->size - 1 - ((31 - highestBitDividend + i + l - 1) / N);
-        int64_t bitInArray;
-        if (arrayNumber == dividend->size - 1)
-        {
-
-            bitInArray = highestBitDividend - (i + l - 1) % N;
-        }
-        else
-        {
-            bitInArray = 32 - (i + l - 1) % N;
-        }
-        /* if (bitInArray < 0)
-        {
-            bit
-            InArray += N;
-        }
-        */
-        int alpha = dividend->array[arrayNumber] & (1 << bitInArray);
-        memcpy(arrayTemp->array, r->array, r->size + 1 * sizeof(elem_size_t));
-        arrayTemp->size = r->size;
-        arrayTemp = bitShiftLeft(r, 1);
-        d->array = arrayTemp->array;
-        if (alpha > 0)
-        {
-            d = addIntToBignum(d, 1);
-        }
-        int subtract = compareBignum(d, divisor);
-        if (subtract < 1)
-        {
-            r = sub(d, divisor);
-        }
-        else
-        {
-            memcpy(r->array, d->array, (d->size) * sizeof(elem_size_t));
-        }
-        bitShiftLeft(q, 1);
-        if (subtract < 1)
-        {
-            q = addIntToBignum(q, 1);
-        }
-    }
-    freeBigNum(d);
-    freeBigNum(r);
-    //freeBigNum(arrayTemp);
-    return q;
 }
 
 bignum *bitShiftRight(bignum *n, uint64_t count)
