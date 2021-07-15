@@ -111,7 +111,7 @@ int main(int argc, char **argv) {
     }
     uint64_t n = strtoull(argv[1], NULL, 0);
     if (errno == ERANGE) {
-        fprintf(stderr, "the given number can not be represented, please pick a number <= %llu", UINT64_MAX);
+        fprintf(stderr, "the given number can not be represented, please pick a number <= %lu", UINT64_MAX);
         return 1;
     }
     if (n == 0ULL || *argv[1] == '-') {
@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     if (*argv[1] == '0') {
-        fprintf(stderr, "Given number begins with 0, enter a number 0 < number <= %llu", UINT64_MAX);
+        fprintf(stderr, "Given number begins with 0, enter a number 0 < number <= %lu", UINT64_MAX);
         return 1;
     }
 
@@ -262,7 +262,8 @@ matrix *matrixBinaryExponentiation(uint64_t n, uint64_t highestBit)
     *(matrixInitial->xn->array) = 1;
     matrixInitial->xnp1 = new_bignum(1);
     *(matrixInitial->xnp1->array) = 2;
-    for (uint64_t i = highestBit - 1; i >= 0; i--)
+    uint64_t i = highestBit - 1;
+    while (1)
     {
         struct matrix *tmp = matrixMultiplication(matrix, matrix);
         freeMatrix(matrix);
@@ -273,6 +274,10 @@ matrix *matrixBinaryExponentiation(uint64_t n, uint64_t highestBit)
             freeMatrix(matrix);
             matrix = tmp;
         }
+        if (i == 0) {
+            break;
+        }
+        i--;
     }
     freeBigNum(matrixInitial->xn);
     freeBigNum(matrixInitial->xnm1);
@@ -610,7 +615,7 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
                                         : calculateHighestBit(xnp1->array[0]) + 1;
     uint64_t diff = xnBits - xnp1Bits;
     bignum *temp2;
-    while (diff >= 0) {
+    while (1) {
         bignum *toAdd = new_bignum(1);
         toAdd->array[0] = 1;
         bitShiftLeft(toAdd, diff);
