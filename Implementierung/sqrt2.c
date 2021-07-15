@@ -2,7 +2,7 @@
 #include "errno.h"
 #include "math.h"
 #include "time.h"
-#include <getopt.h>
+//#include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +17,7 @@
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
-static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
+// static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
 struct bignum
 {
     size_t size;
@@ -43,8 +43,8 @@ void printUsage(char **argv);
 void freeBigNum(bignum *toFree);
 bignum *divideLongDivision(bignum *dividend, bignum *divisor);
 bignum *copy(bignum *from, int countBits);
-bignum *bitShiftRight(bignum *n, int count);
-bignum *bitShiftLeft(bignum *n, int count);
+bignum *bitShiftRight(bignum *n, uint64_t count);
+bignum *bitShiftLeft(bignum *n, uint64_t count);
 bignum *addIntToBignum(bignum *n, int toAdd);
 matrix *matrixSimpleExponentiation(unsigned long long n);
 void freeMatrix(matrix *toFree);
@@ -76,60 +76,70 @@ struct matrix
 
 int main(int argc, char **argv)
 {
-    int hexadecimal = 0;
-    int c;
-    if (argc == 1 || argc > 3)
-    {
-        printUsage(argv);
-        return 1;
-    }
-    while (1)
-    {
-        int option_index = 0;
-        c = getopt_long(argc, argv, "hx", long_options, &option_index);
-        if (c == -1)
-        {
-            break;
-        }
-        switch (c)
-        {
-        case 'h': {
-            printUsage(argv);
-            return 1;
-        }
-        case 'x': {
-            hexadecimal = 1;
-            break;
-        }
-        default: {
-            fprintf(stderr, "Unknown option was used");
-            exit(1);
-        }
-        }
-    }
-    uint64_t n = strtoull(argv[1], NULL, 0);
-    if (errno == ERANGE)
-    {
-        fprintf(stderr, "the given number can not be represented, please pick a number < UINT64_MAX");
-        return 1;
-    }
-    if (n == 0ULL || *argv[1] == '-')
-    {
-        fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
-        return 1;
-    }
+    /*  int hexadecimal = 0;
+      int c;
+      if (argc == 1 || argc > 3)
+      {
+          printUsage(argv);
+          return 1;
+      }
+      while (1)
+      {
+          int option_index = 0;
+          c = getopt_long(argc, argv, "hx", long_options, &option_index);
+          if (c == -1)
+          {
+              break;
+          }
+          switch (c)
+          {
+          case 'h': {
+              printUsage(argv);
+              return 1;
+          }
+          case 'x': {
+              hexadecimal = 1;
+              break;
+          }
+          default: {
+              fprintf(stderr, "Unknown option was used");
+              exit(1);
+          }
+          }
+      }
+      uint64_t n = strtoull(argv[1], NULL, 0);
+      if (errno == ERANGE)
+      {
+          fprintf(stderr, "the given number can not be represented, please pick a number < UINT64_MAX");
+          return 1;
+      }
+      if (n == 0ULL || *argv[1] == '-')
+      {
+          fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
+          return 1;
+      }*/
+    int n = 1000;
     int op = convertAccToN(n);
     matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
-    //matrix *res = matrixSimpleExponentiation(op);
-    //double sqrt2 = 1 + (double)res->xn->array[0]/(double)res->xnp1->array[0];
+    // double sqrt2 = 1 + (double)res->xn->array[0]/(double)res->xnp1->array[0];
     char *resultN = decToPrint(res->xn);
-    char *resultNp1 = decToPrint(res->xnp1);
-    printf("%lu\n", res->xn->size);
-    printf("xn:%s\n", resultN); 
-    printf("xnp1:%s\n", resultNp1);
+    char *resultNh = hexToPrint(res->xn);
+    bignum *oper = new_bignum(1);
+    *oper->array = 10;
+    for (int i = 0; i < n; i++)
+    {
+        res->xn = mul(res->xn, oper);
+    }
+    // uint64_t s = res->xn->array[0] / res->xnp1->array[0];
+    bignum *div = div2bignums(res->xn, res->xnp1);
+    char *final = decToPrint(div);
+    printf("%s\n", final);
+    printf("size1: %u\n", res->xn->size);
+    printf("xn: %s\n", resultN);
+    printf("xnh: %s\n", resultNh);
     freeMatrix(res);
-    //printf("sqrt2:%f\n", sqrt2); 
-    //printf("Result int res5->xn->array[0]: %u and res5-xn->array[1]: %u", res5->xn->array[0], res5->xn->array[1]);
+    // printf("sqrt2:%f\n", sqrt2);
+    // printf("Result int res5->xn->array[0]: %u and res5-xn->array[1]: %u", res5->xn->array[0], res5->xn->array[1]);
     return 0;
 }
 
@@ -172,7 +182,8 @@ matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
     return res;
 }
 
-matrix *matrixSimpleExponentiation(unsigned long long n) {
+matrix *matrixSimpleExponentiation(unsigned long long n)
+{
     struct matrix *matrix = malloc(3 * sizeof(bignum));
     if (matrix == NULL)
     {
@@ -183,22 +194,23 @@ matrix *matrixSimpleExponentiation(unsigned long long n) {
     matrix->xnp1->array[0] = 2;
     matrix->xn = new_bignum(1);
     matrix->xn->array[0] = 1;
-    matrix->xnm1 = new_bignum(1);
-    matrix->xnm1->array[0] = 0;
+    matrix->xnm1 = new_bignum(0);
+    // matrix->xnm1->array[0] = 0;
     struct matrix *matrixInitial = malloc(3 * sizeof(bignum));
     if (matrixInitial == NULL)
     {
         fprintf(stderr, "Couldn't allocate memory for a matrix in matrixBinaryExp");
         exit(1);
     }
-    matrixInitial->xnm1 = new_bignum(1);
-    *(matrixInitial->xnm1->array) = 0;
+    matrixInitial->xnm1 = new_bignum(0);
+    // *(matrixInitial->xnm1->array) = 0;
     matrixInitial->xn = new_bignum(1);
     *(matrixInitial->xn->array) = 1;
     matrixInitial->xnp1 = new_bignum(1);
     *(matrixInitial->xnp1->array) = 2;
-    for(int i = 0; i < n - 1; i++) {
-	struct matrix *tmp = matrixMultiplication(matrix, matrixInitial);
+    for (int i = 0; i < n - 1; i++)
+    {
+        struct matrix *tmp = matrixMultiplication(matrix, matrixInitial);
         freeMatrix(matrix);
         matrix = tmp;
     }
@@ -398,7 +410,7 @@ bignum *mul(bignum *xn, bignum *xnp1)
     uint64_t size1 = xn->size;
     uint64_t size2 = xnp1->size;
 
-    if (xn->size == 0 || xnp1->size == 0)
+    if (xn->size == 0 || xnp1->size == 0 || xn->size == 1 && *xn->array == 0 || xnp1->size == 1 && *xnp1->array == 0)
     {
         bignum *res = malloc(sizeof(*xn));
         if (res == 0)
@@ -411,10 +423,25 @@ bignum *mul(bignum *xn, bignum *xnp1)
     }
     else if (size1 > 1 || size2 > 1)
     {
-        uint64_t aNewSize = size1 / 2;
-        uint64_t bNewSize = size1 - aNewSize;
+        uint64_t aNewSize;
+        uint64_t bNewSize;
+        uint64_t cNewSize;
+        uint64_t dNewSize;
+        if (size1 < size2)
+        {
+            aNewSize = size1 / 2;
+            bNewSize = size1 - aNewSize;
+            dNewSize = bNewSize;
+            cNewSize = size2 - dNewSize;
+        }
+        else
+        {
+            cNewSize = size2 / 2;
+            dNewSize = size2 - cNewSize;
+            bNewSize = dNewSize;
+            aNewSize = size1 - bNewSize;
+        }
         bignum *b = new_bignum(bNewSize);
-        b->size = bNewSize;
 
         // we need to write in b the second part of xn
         // void *memcpy(void *dest, const void *src, std::size_t count);
@@ -422,19 +449,13 @@ bignum *mul(bignum *xn, bignum *xnp1)
         b->array = xn->array;
 
         bignum *a = new_bignum(aNewSize);
-        a->size = aNewSize;
         // memcpy(a->array, (xn->array + bNewSize), aNewSize * sizeof(elem_size_t));
         a->array = xn->array + bNewSize;
-
-        uint64_t cNewSize = size2 / 2;
-        uint64_t dNewSize = size2 - cNewSize;
         bignum *c = new_bignum(cNewSize);
-        c->size = cNewSize;
         c->array = xnp1->array + dNewSize;
         // memcpy(c->array, (xnp1->array + dNewSize), cNewSize * sizeof(elem_size_t));
 
         bignum *d = new_bignum(dNewSize);
-        d->size = dNewSize;
         // memcpy(d->array, xnp1->array, dNewSize * sizeof(elem_size_t));
         d->array = xnp1->array;
         bignum *ac = mul(a, c);
@@ -452,7 +473,8 @@ bignum *mul(bignum *xn, bignum *xnp1)
         bignum *ad_add_bc = sub(abcd_sub_ac, bd);
         if (ac->size != 0)
         {
-            elem_size_t *tmp = realloc(ac->array, sizeof(elem_size_t) * (ac->size + 2));
+            arrayShift(ac, bNewSize + dNewSize);
+            /* elem_size_t *tmp = realloc(ac->array, sizeof(elem_size_t) * (ac->size + 2));
             if (tmp == NULL)
             {
                 fprintf(stderr, "Couldn't reallocate memory for a shift in sum");
@@ -468,11 +490,11 @@ bignum *mul(bignum *xn, bignum *xnp1)
                 }
                 *(ac->array) = 0;
                 *(ac->array + 1) = 0;
-            }
+            }*/
         }
         if (ad_add_bc->size != 0)
         {
-            elem_size_t *tmp = realloc(ad_add_bc->array, sizeof(elem_size_t) * (ad_add_bc->size + 1));
+            /* elem_size_t *tmp = realloc(ad_add_bc->array, sizeof(elem_size_t) * (ad_add_bc->size + 1));
             if (tmp == NULL)
             {
                 fprintf(stderr, "Couldn't allocate memory for a zero shift in sum");
@@ -488,7 +510,8 @@ bignum *mul(bignum *xn, bignum *xnp1)
                     *(ad_add_bc->array + i) = *(ad_add_bc->array + i - 1);
                 }
                 *(ad_add_bc->array) = 0;
-            }
+            }*/
+            arrayShift(ad_add_bc, bNewSize);
         }
         bignum *res = add(add(ac, ad_add_bc), bd);
         freeBigNum(ac);
@@ -570,24 +593,65 @@ bignum *mul2num(elem_size_t x, elem_size_t y)
 
 bignum *div2bignums(bignum *xn, bignum *xnp1)
 {
-    size_t size = xn->size;
-    bignum *res = new_bignum(size);
-    bignum *row = new_bignum(size);
-    row->size = 1;
-    for (long i = xn->size - 1; i >= 0; i--)
-    {
-        arrayShift(row, 1);
-        row->array[0] = xn->array[i];
-        res->array[i] = 0;
-        while (compareBignum(row, xnp1) < 1)
-        {
-            res->array[i]++;
-            row = sub(row, xnp1);
-            zeroJustify(row);
+    bignum *res = new_bignum(0);
+    res->array[0] = 0;
+    uint64_t xnBits = xn->size >= 2 ? (xn->size - 1) * N + calculateHighestBit(xn->array[xn->size - 1]) + 1
+                                    : calculateHighestBit(xn->array[0]) + 1;
+    uint64_t xnp1Bits = xnp1->size >= 2 ? (xnp1->size - 1) * N + calculateHighestBit(xnp1->array[xnp1->size - 1] + 1)
+                                        : calculateHighestBit(xnp1->array[0]) + 1;
+    uint64_t diff = xnBits - xnp1Bits;
+    bignum *temp = new_bignum(1);
+    temp->array[0] = 1;
+    bignum *temp2;
+    bignum *fit = new_bignum(0);
+    bignum *fitInitial = new_bignum(1);
+    fit->array[0] = 0;
+    while (diff >= 0) {
+        bignum *toAdd = new_bignum(1);
+        toAdd->array[0] = 1;
+        bitShiftLeft(toAdd, diff);
+        temp2 = mul(xnp1, toAdd);
+        memcpy(fitInitial->array, fit->array, (fit->size) * sizeof(elem_size_t));
+        fitInitial->size = fit->size;
+        fit = add(fit, temp2);
+        int compare = compareBignum(xn, fit);
+        if (compare < 1) {
+            res = add(res, toAdd);
+            //freeBigNum(fitInitial);
+            //fitInitial = new_bignum(1);
+            if (compare == 0) {
+                break;
+            }
         }
+        else {
+            free(fit);
+            fit = fitInitial;
+        }
+        if (diff == 0) {
+            break;
+        }
+        diff--;
     }
-    zeroJustify(res);
-    freeBigNum(row);
+    free(temp2);
+    free(fit);
+    free(temp);
+    /*while (diff > 1)
+    {
+        bignum *tmp = new_bignum(1);
+        tmp->array[0] = 1;
+
+        bitShiftLeft(tmp, diff - 1);
+        res = add(res, tmp);
+        bignum *july = mul(xnp1, tmp);
+        xn = sub(xn, july);
+        // july = mul(july, temp2);
+        xnBits = xn->size >= 2 ? (xn->size - 2) * N + calculateHighestBit(xn->array[xn->size - 1])
+                               : calculateHighestBit(xn->array[0]);
+        xnp1Bits = xnp1->size >= 2 ? (xnp1->size - 2) * N + calculateHighestBit(xnp1->array[xnp1->size - 1])
+                                   : calculateHighestBit(xnp1->array[0]);
+        diff = xnBits - xnp1Bits;
+    }
+     */
     return res;
 }
 
@@ -637,11 +701,12 @@ void arrayShift(bignum *n, int count)
     for (i = 0; i < count; i++)
         *(n->array + i) = 0;
     n->size = n->size + count;
+    zeroJustify(n);
 }
 
 void zeroJustify(bignum *n)
 {
-    while ( (n->size == 1 && n->array[0] == 0)|| (n->size > 1) && (n->array[n->size - 1] == 0))
+    while ((n->size == 1 && n->array[0] == 0) || (n->size > 1) && (n->array[n->size - 1] == 0))
     {
         n->size--;
     }
@@ -738,7 +803,8 @@ void addToPrint(elem_size_t *decArray, uint64_t *size, elem_size_t summand)
     uint64_t tmp = summand;
     for (int i = 0; i < *size; i++)
     {
-        if (tmp == 0){
+        if (tmp == 0)
+        {
             return;
         }
         *(decArray + i) = (tmp += *(decArray + i)) % POWER10_9;
@@ -870,7 +936,7 @@ char *decToPrint(bignum *a)
         }
     }
     *str = '\0';
-    free(decArray);
+    // free(decArray);
     return string;
 }
 
@@ -916,15 +982,22 @@ bignum *divideLongDivision(bignum *dividend, bignum *divisor)
     for (int i = 0; i <= k - l; i++)
     {
         uint64_t arrayNumber = dividend->size - 1 - ((31 - highestBitDividend + i + l - 1) / N);
-        uint64_t bitInArray;
+        int64_t bitInArray;
         if (arrayNumber == dividend->size - 1)
         {
+
             bitInArray = highestBitDividend - (i + l - 1) % N;
         }
         else
         {
             bitInArray = 32 - (i + l - 1) % N;
         }
+        /* if (bitInArray < 0)
+        {
+            bit
+            InArray += N;
+        }
+        */
         int alpha = dividend->array[arrayNumber] & (1 << bitInArray);
         memcpy(arrayTemp->array, r->array, (r->size + 1) * sizeof(elem_size_t));
         arrayTemp = bitShiftLeft(r, 1);
@@ -954,7 +1027,7 @@ bignum *divideLongDivision(bignum *dividend, bignum *divisor)
     return q;
 }
 
-bignum *bitShiftRight(bignum *n, int count)
+bignum *bitShiftRight(bignum *n, uint64_t count)
 {
     if (n->size == 0 && n->array[0] == 0)
     {
@@ -976,31 +1049,37 @@ bignum *bitShiftRight(bignum *n, int count)
     return n;
 }
 
-bignum *bitShiftLeft(bignum *n, int count)
+bignum *bitShiftLeft(bignum *n, uint64_t count)
 {
     if (n->size == 0 && n->array[0] == 0)
     {
         return n;
     }
-    while (count > 0) {
-        if (count > 31) {
+    while (count > 0)
+    {
+        if (count > 31)
+        {
             count -= 32;
             arrayShift(n, 1);
-        } else {
-            for (int i = n->size - 1; i >= 0; i--)
-        {
-            if (n->array[i] >= TWO_POW_31) {
-                if (i == n->size - 1) {
-                    n->array = realloc(n->array, (n->size + 1) * sizeof(elem_size_t));
-                    n->size++;
-                    n->array[n->size - 1] = 0;
-                }
-                n->array[i + 1] += 1;
-            }
-            n->array[i] = n->array[i] << 1;
         }
-        count--;
-    }
+        else
+        {
+            for (int i = n->size - 1; i >= 0; i--)
+            {
+                if (n->array[i] >= TWO_POW_31)
+                {
+                    if (i == n->size - 1)
+                    {
+                        n->array = realloc(n->array, (n->size + 1) * sizeof(elem_size_t));
+                        n->size++;
+                        n->array[n->size - 1] = 0;
+                    }
+                    n->array[i + 1] += 1;
+                }
+                n->array[i] = n->array[i] << 1;
+            }
+            count--;
+        }
     }
     return n;
 }
