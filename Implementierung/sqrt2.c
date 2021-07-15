@@ -2,7 +2,7 @@
 #include "errno.h"
 #include "math.h"
 #include "time.h"
-//#include <getopt.h>
+#include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,7 +18,7 @@
 typedef uint32_t elem_size_t;
 typedef struct bignum bignum;
 typedef struct matrix matrix;
-// static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
+static struct option long_options[] = {{"help", no_argument, 0, 'h'}, {0, 0, 0, 0}};
 struct bignum
 {
     size_t size;
@@ -77,53 +77,53 @@ struct matrix
 
 int main(int argc, char **argv)
 {
-    // int hexadecimal = 0;
-    // int c;
-    // if (argc == 1 || argc > 3)
-    //{
-    //    printUsage(argv);
-    //    return 1;
-    //}
-    // while (1)
-    //{
-    //    int option_index = 0;
-    //    c = getopt_long(argc, argv, "hx", long_options, &option_index);
-    //    if (c == -1)
-    //    {
-    //        break;
-    //    }
-    //    switch (c)
-    //    {
-    //    case 'h': {
-    //        printUsage(argv);
-    //        return 1;
-    //    }
-    //    case 'x': {
-    //        hexadecimal = 1;
-    //        break;
-    //    }
-    //    default: {
-    //        fprintf(stderr, "Unknown option was used");
-    //        exit(1);
-    //    }
-    //    }
-    //}
-    // uint64_t n = strtoull(argv[1], NULL, 0);
-    // if (errno == ERANGE)
-    //{
-    //    fprintf(stderr, "the given number can not be represented, please pick a number < %llu", UINT64_MAX);
-    //    return 1;
-    //}
-    // if (n == 0ULL || *argv[1] == '-')
-    //{
-    //    fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
-    //    return 1;
-    //}
-    // if (*argv[1] == '0')
-    //{
-    //    fprintf(stderr, "Given number begins with 0, enter another number 0 < number < %llu", UINT64_MAX);
-    //    return 1;
-    //}
+    int hexadecimal = 0;
+    int c;
+    if (argc == 1 || argc > 3)
+    {
+       printUsage(argv);
+       return 1;
+    }
+    while (1)
+    {
+       int option_index = 0;
+       c = getopt_long(argc, argv, "hx", long_options, &option_index);
+       if (c == -1)
+       {
+           break;
+       }
+       switch (c)
+       {
+       case 'h': {
+           printUsage(argv);
+           return 1;
+       }
+       case 'x': {
+           hexadecimal = 1;
+           break;
+       }
+       default: {
+           fprintf(stderr, "Unknown option was used");
+           exit(1);
+       }
+       }
+    }
+    uint64_t n = strtoull(argv[1], NULL, 0);
+    if (errno == ERANGE)
+    {
+       fprintf(stderr, "the given number can not be represented, please pick a number < %llu", UINT64_MAX);
+       return 1;
+    }
+    if (n == 0ULL || *argv[1] == '-')
+    {
+       fprintf(stderr, "invalid number of digits: it should be > 0 or the given parameter was not a number");
+       return 1;
+    }
+    if (*argv[1] == '0')
+    {
+       fprintf(stderr, "Given number begins with 0, enter another number 0 < number < %llu", UINT64_MAX);
+       return 1;
+    }
     int n = 1000;
     int op = convertAccToN(n, 0);
     matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
