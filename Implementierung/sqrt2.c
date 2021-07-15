@@ -125,8 +125,6 @@ int main(int argc, char **argv)
     int op = convertAccToN(n);
     matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
     // double sqrt2 = 1 + (double)res->xn->array[0]/(double)res->xnp1->array[0];
-    char *resultN = decToPrint(res->xn);
-    char *resultNh = hexToPrint(res->xn);
     bignum *oper = new_bignum(1);
     *oper->array = 10;
     for (int i = 0; i < n; i++)
@@ -135,11 +133,10 @@ int main(int argc, char **argv)
     }
     // uint64_t s = res->xn->array[0] / res->xnp1->array[0];
     bignum *div = div2bignums(res->xn, res->xnp1);
+    //bignum *div = divideLongDivision(res->xn, res->xnp1);
     char *final = decToPrint(div);
-    printf("%s\n", final);
-    printf("size1: %u\n", res->xn->size);
-    printf("xn: %s\n", resultN);
-    printf("xnh: %s\n", resultNh);
+    printf("1,%s\n", final);
+    free(final);
     freeMatrix(res);
     // printf("sqrt2:%f\n", sqrt2);
     // printf("Result int res5->xn->array[0]: %u and res5-xn->array[1]: %u", res5->xn->array[0], res5->xn->array[1]);
@@ -989,7 +986,8 @@ bignum *divideLongDivision(bignum *dividend, bignum *divisor)
         }
         */
         int alpha = dividend->array[arrayNumber] & (1 << bitInArray);
-        memcpy(arrayTemp->array, r->array, (r->size + 1) * sizeof(elem_size_t));
+        memcpy(arrayTemp->array, r->array, r->size + 1 * sizeof(elem_size_t));
+        arrayTemp->size = r->size;
         arrayTemp = bitShiftLeft(r, 1);
         d->array = arrayTemp->array;
         if (alpha > 0)
@@ -1011,9 +1009,9 @@ bignum *divideLongDivision(bignum *dividend, bignum *divisor)
             q = addIntToBignum(q, 1);
         }
     }
-    printf("Quotient: %u and rest: %u\n", q->array[0], r->array[0]);
-    free(arrayTemp);
-    free(d);
+    freeBigNum(d);
+    freeBigNum(r);
+    //freeBigNum(arrayTemp);
     return q;
 }
 
@@ -1049,8 +1047,8 @@ bignum *bitShiftLeft(bignum *n, uint64_t count)
     {
         if (count > 31)
         {
-            count -= 32;
-            arrayShift(n, 1);
+            arrayShift(n, count / N);
+            count = count % N;
         }
         else
         {
