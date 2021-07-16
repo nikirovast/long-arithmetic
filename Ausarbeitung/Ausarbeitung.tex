@@ -17,7 +17,7 @@
 \maketitle
 
 \section{Einleitung}
-Die vorliegende Arbeit beschäftigt sich mit dem Algorithmus der schnellen Exponentiation von Matrizen von großen Zahlen und seine Anwendung auf die iterative Berechnung der Konstante  \(\sqrt{2}\) mit der beliebigen vom Benutzer wählbaren Genauigkeit. Zu diesem Zweck wurde eine Methode zur Speicherung langer Zahlen und zur effizienten Durchführung mathematischer Operationen auf diesen entwickelt und die Anzahl der Operationen, die zum Erreichen einer bestimmten Genauigkeit erforderlich sind, mathematisch abgeschätzt.
+Die vorliegende Arbeit beschäftigt sich mit dem Algorithmus der schnellen Exponentiation von Matrizen von großen Zahlen und seiner Anwendung auf die iterative Berechnung der Konstante  \(\sqrt{2}\) mit der beliebigen vom Benutzer wählbaren Genauigkeit. Zu diesem Zweck wurde eine Methode zur Speicherung langer Zahlen und zur effizienten Durchführung mathematischer Operationen auf diesen entwickelt und die Anzahl der Operationen, die zum Erreichen einer bestimmten Genauigkeit erforderlich sind, mathematisch abgeschätzt.
 \section{Lösungsansatz}
 \subsection{Überblick}%
 Die iterative Formel, die wir zur Berechnung der Konstante \(\sqrt{2}\) verwenden, lautet wie folgt:
@@ -39,7 +39,7 @@ x_n & x_{n+1}
 1 & 2
 \end{pmatrix} }^n
 \end{equation}
-Und um (\ref{eq:matrixPower}) zu berechnen, verwenden wir die schnelle Exponentiation, die im Folgenden im Detail erläutert wird.
+Um (\ref{eq:matrixPower}) zu berechnen, verwenden wir die schnelle Exponentiation, die im Folgenden im Detail erläutert wird.
 \subsection{Korrektheit der schnellen Exponentiation}%
 Schnelle Exponentiation erlaubt es, wie der Name schon sagt, eine Zahl schneller zu potenzieren als die naive Exponentiation: \begin{equation}
 x^n = \underbrace{x \cdot x \cdot x \cdot ... \cdot x}_\text{n mal}
@@ -75,23 +75,27 @@ array[0] & array[1] & array[2]\\
 \hline
 \end{array}
 \end{equation*}
-\subsection{Addition, Substraction und Multiplikation dieser Zahlen}%
-\subsubsection{Addition und Substraction}%
-Das Addieren und die Subtrahieren werden auf eine ähnliche Weise durchgeführt, wie wir es in der Schule gelernt haben. Man muss Zellen nacheinander addieren oder subtrahieren und dabei noch auf die Übertragung achten.
+\subsection{Addition, Subtraktion und Multiplikation dieser Zahlen}%
+\subsubsection{Addition und Subtraktion}%
+Das Addieren und das Subtrahieren werden auf eine ähnliche Weise durchgeführt, wie wir es in der Schule gelernt haben. Man muss Zellen nacheinander addieren oder subtrahieren und dabei noch auf die Übertragung (Carry) achten, die das höhere Element beeinflüssen könnte.
 \subsubsection{Multiplikation und Karatsuba-Algorithmus}%
-Wie bereits erwähnt, liegt der Schwerpunkt der Arbeit auf dem Umgang mit großen Zahlen, deren naive Multiplikation sehr aufwendig sein kann und nur in $O(n^2)$ durchgeführt wird. Daher wurde beschlossen, diese Zahlen mit dem Karatsuba-Algorithmus   \cite{Karatsuba} zu multiplizieren, der es erlaubt, die gleichen Zahlen in $O(n^{\log_23})$ zu multiplizieren. \\
-Die Grundidee dieses Algorithmus, der einen Zeitgewinn darstellt, besteht darin, die Anzahl der Multiplikationsoperationen auf großen Zahlen zu reduzieren. Dies wird erreicht, wenn man die einzelne Multiplikationsoperation durch Addition, Subtraktion und bereits bekannte Ergebnisse ausdrückt. \\
-Genauer gesagt, repräsentieren wir unsere Multiplikatoren $A$ und $B$ in dieser Form:
+Wie bereits erwähnt, liegt der Schwerpunkt der Arbeit auf dem Umgang mit großen Zahlen, deren naive Multiplikation sehr aufwendig sein kann und nur in $O(n^2)$ durchgeführt wird. Daher wurde beschlossen, diese Zahlen mit dem Karatsuba-Algorithmus   \cite{Karatsuba} zu multiplizieren, der es erlaubt, die gleichen Zahlen mit  je $n$ Bits in $O(n^{\log_23})$ zu multiplizieren. \\
+Die Grundidee dieses Algorithmus, der einen Zeitgewinn darstellt, besteht darin, die Anzahl der Multiplikationsoperationen auf großen Zahlen zu reduzieren. Dies wird erreicht, wenn man die einzelne Multiplikationsoperation durch Addition, Subtraktion und bereits bekannte Ergebnisse rekursiv ausdrückt. \\
+Genauer gesagt, repräsentieren wir unsere Faktoren $A$ und $B$ in dieser Form:
 \begin{equation*}
 A = ax + b \qquad B = cx + d 
 \end{equation*} 
-Und dann bekommen wir das Ergebnis der Multiplikation:
+Und dann vereinfachen wir das Ergebnis der Multiplikation:
 \begin{equation}\label{eq:karatsuba}
 AB = ac\cdot x^2 + ((a + b)\cdot(c + d) - ac - bd)\cdot x + bd
 \end{equation}
 In dieser Form sieht man genauer, dass man die Kosten einer Multiplikation beibehalten hat.\\
-In unserer Implementierung wiederholen wir ein ähnliches Aufteilungsverfahren, bis wir Zahlen haben, die durch ein einzelnes Element des obigen Arrays darstellbar sind und daher leicht multipliziert werden können.
-\subsection{Ausgabe in binärer und hexadezimaler Form }%
+In unserer Implementierung wiederholen wir ein ähnliches rekursives Aufteilungsverfahren, bis wir Zahlen haben, die durch ein einzelnes Element des obigen Arrays darstellbar sind und daher leicht multipliziert werden können.
+\subsection{Division und das Divisionsergebnis}%
+Der letzte Schritt bei der Berechnung der Konstante in unserem Algorithmus bestand darin, die beiden Integer-Zahlen zu dividieren und das Ergebnis im Real-Format darzustellen. Da wir nur ein enges Problem zu lösen hatten, entschieden wir uns, unsere reelle Zahl als Ganzzahl zu speichern und dabei zu berücksichtigen, dass die Ziffern dieser Zahl eigentlich die Nachkommastellen unserer Konstante darstellen. Dabei muss vorher $x_n$ entsprechend mit $10^n$ multipliziert werden bevor die eigentliche Division stattfindet. Die Division selbst funktioniert in unserem Fall nach dem Annäherungsprinzip: zuerst wird überprüft wie groß die Bitdifferenz $diff$ zwischen Dividenden und Teiler ist und danach werden alle Zweierpotenzen, anfangend von $2^{diff}$ ausprobiert und das Produkt $x_{n+1} \cdot 2^i$ von $x_n$ subtrahiert. Das Vorgehen wird solange wiederholt bis man alle Zweierpotenzen durchiteriert hat oder $x^n$ zufälligerweise $0$ geworden ist.\\
+Es ist klar, dass selbst wenn unsere iterativen Terme als Fließkommazahlen nach IEEE-754 dargestellt werden könnten, das Ergebnis dieser Aufteilung für uns nicht funktionieren würde.  Bei unseren iterativen Termen handelt es sich um relativ große Zahlen und die Präzision ist für uns von größter Bedeutung. In IEEE-754 nimmt die Präzision, mit der die Zahl gespeichert wird, mit steigender Zahl ab. 
+
+\subsection{Ausgabe in dezimaler und hexadezimaler Form }%
 Es sei auch kurz darauf hingewiesen, dass die Übersetzung großer Zahlen in verschiedene Systeme mit den üblichen Methoden schwierig sein kann. Und so wurden zusätzliche Methoden auf Basis des Gorner-Schemas \cite{Gorner} geschaffen, um diese zu implementieren.
 \section{Genauigkeit}
 Wie in der Einleitung oben erwähnt, gehen wir davon aus, dass der Benutzer über die Konsole eingeben kann, mit welcher Genauigkeit das Ergebnis ausgegeben werden sollte. Wir haben uns dafür entschieden, dass in unserem Fall die Anzahl der korrekten Nachkommastellen eine angemessene Genauigkeit ist. Daher werden wir im Folgenden die Argumentation für die Schätzung der Anzahl der Iterationen demonstrieren, die erforderlich sind, um eine bestimmte Genauigkeit zu erreichen.\\ 
@@ -162,11 +166,11 @@ Außerdem ist leicht zu erkennen, dass diese Formel (\ref{eq:finalAproximation})
 
 
 \section{Performanzanalyse}
-In diesem Abschnitt analysieren wir die Performanz durch die Zeitmessungen der einzelnen Methoden unter verschiedenen Eingaben. Alle Zeitmessungen, die im Folgenden dargestellt werden, wurden auf der Rechnerhalle $lxhalle.in.tum.de$ $5$ mal ausgeführt, der mittlere Wert daraus berechnet und in die Tabelle eingetragen. Die Ergebnisse wurden in Sekunden gemessen:
+In diesem Abschnitt analysieren wir die Performanz durch die Zeitmessungen der einzelnen Methoden unter verschiedenen Eingaben. Alle Zeitmessungen, die im Folgenden dargestellt werden, wurden auf dem lokalen, immer gleichen PC $5$ mal ausgeführt, der mittlere Wert daraus berechnet und in die Tabelle eingetragen. Die Ergebnisse wurden in Sekunden gemessen:
 \begin{center}
     \begin{tabular}{|c|c|c|c|c|c|c}
     \hline
-  & n = 1 & n = 10 & n = 100 & n = 1000 & n = 10000 \\
+ n & 1 & 10 & 100 & 1000 & 10000 \\
 \hline
 SimpleExponentiation & 0.000068 & 0.000090 & 0.003510 & 0.575478 & >2 min \\
 \hline
@@ -174,9 +178,28 @@ BinaryExponentiation & 0.000071  & 0.000070  & 0.000277 & 0.004216 & 0.171003 \\
 \hline
     \end{tabular}
 \end{center}
-Der Grund für die entsprechende Zeitmessung bei der Eingabe n = 10000 mit der matrixSimpleExponentiation ist, dass wir Karatsuba-Multiplikation angewendet haben und diese nur dann sehr effizient funktioniert, wenn die Zahlen ungefähr gleich groß sind. Bei der normalen Exponentiation wird immer die Ausgangsmatrix mit der aktuellen Matrix multipliziert, was natürlich sehr ineffektiv ist, da die aktuelle Matrix sehr schnell wächst und die Ausgangsmatrix immer gleich bleibt.
+Der Grund für die entsprechende Zeitmessung bei der Eingabe n = 10000 mit der matrixSimpleExponentiation ist, dass wir Karazuba-Multiplikation angewendet haben und diese nur dann sehr effizient funktioniert, wenn die Zahlen ungefähr gleich groß sind. Bei der normalen Exponentiation wird immer die Ausgangsmatrix mit der aktuellen Matrix multipliziert, was natürlich sehr ineffektiv ist, da die aktuelle Matrix sehr schnell wächst und die Ausgangsmatrix immer gleich bleibt.
+Bevor wir unsere erreichte Ergebnisse und deren Bedeutung zusammenfassen wollen wir noch die Zeitmessungen der Division zweier großen Zahlen analysieren. Genauso wie vorher sind alle Ergebnisse in Sekunden gemessen worden:
+\begin{center}
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+ n = 1 & n = 10 & n = 25 & n = 50 & n = 100 & n = 250 \\
+\hline
+0.000058 & 0.000093 & 0.000318 & 0.001426 & 0.006952 & 0.094541  \\
+  \hline
+  &&&&&\\
+\hline
+ n = 400 & n = 500 & n = 750 & n = 1000 & n = 2000 & n = 3000 \\
+\hline
+0.409463 & 0.827066 & 2.311850 & 6.335765 & 57.536390 & 207.34 \\
+\hline
+ \end{tabular}
+ \end{center}
+
+Es ist offensichtlich, dass der Algorithmus nicht in $O(n)$ liegt. Man sieht, dass die gemessene Zeit bei steigenden Eingaben bis $n = 500$ relativ langsam wächst. Der Grund dafür ist die Tatsache, dass $x_n$ zuerst mit $10^n$ multipliziert wird und das macht natürlich die Division umso zeitaufwendiger, je größer die Bitdifferenz vom Teiler und Dividenden sind, was bei großen Nutzereingaben der Fall ist. 
 
 \section{Zusammenfassung und Ausblick}
+Es ist offensichtlich, dass unsere Implementierung auf jeden Fall noch weiter zu optimieren ist. Beispielsweise der Algorithmus für die Division, den wir ausgesucht haben ist bei weitem nicht der schnellste. Da unser Projekt sich hauptsächlich mit der schnellen Exponentiation befasst, haben wir uns entschieden den Fokus auf andere Optimierungen zu legen. Trotzdem sind die von uns optimierten Methoden bemerkbar schneller und manche Ergebnisse überraschend schnell, obwohl bei einer relativ großer Eingabe enorm viele Bitoperationen stattfinden.
 
 % TODO: Fuegen Sie Ihre Quellen der Datei Ausarbeitung.bib hinzu
 % Referenzieren Sie diese dann mit \cite{}.
