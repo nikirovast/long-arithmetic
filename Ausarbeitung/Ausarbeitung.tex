@@ -54,7 +54,7 @@ Offensichtlich gilt unter anderem:
 \end{equation}
 Daraus ergibt sich, dass die bisher enstandene Zahl mit sich selbst $k$ mal multipliziert wird, wobei $k$ das höchstgesetzte Bit der binären Darstellung von $n$ ist, und falls an der $i$-ten Stelle eine $1$ steht, wird $x^i$ mit dem bisher erreichten Ergebnis multiplziert, ansonsten weiter potenziert bis das letzte Bit abgearbeitet wurde. Am Ende ergibt sich genau das gleiche Ergebnis wie bei der normalen Exponentiation. In unserer Implementierung haben wir dieses Verfahren angepasst, was in folgendem Abschnitt verdeutlicht wird. 
 \subsection{Übertragung der schnellen Exponentiation auf Matrizen}%
-Bevor wir uns in die Implementierung vertiefen, wollen wir anmerken, dass laut der Aufgabenstellung müssen wir lediglich die Exponentiation auf die 2x2 Blockmatrizen übertragen. Außerdem sind in allen Matrizen, die im Laufe der Exponetiation entstehen, nur $3$ unterschiedliche Werte vorhanden, weil $x^n$ $2$ immer mal vorkommt. Dies vereinfacht die durchzuführenden Operationen deutlich. 
+Bevor wir uns in die Implementierung vertiefen, wollen wir anmerken, dass laut der Aufgabenstellung müssen wir lediglich die Exponentiation auf die 2x2 Blockmatrizen übertragen. Außerdem sind in allen Matrizen, die im Laufe der Exponetiation entstehen, nur $3$ unterschiedliche Werte vorhanden, weil $x^n$ immer $2$ mal vorkommt. Dies vereinfacht die durchzuführenden Operationen deutlich. 
 Wie im vorherigen Abschnitt schon erwähnt, haben wir das Verfahren leicht umgeändert: damit wir die Zweierpotenzen nicht speichern müssen, iterieren wir nun vom höchsten Bit ausgehend bis zum ersten. Dabei entspricht jede $1$ an der Bitstelle $i$ einer Quadrierung und Multiplikation direkt danach und jede $0$ lediglich einer Quadrierung. Das höchstgesetze Bit wir dabei übersprungen, da wir mit $x^0$ anfangen und die $1^2 = 1$ ist. Stattdessen wird $x^1$ geschrieben, die Iteration beginnt also erst beim vorletzten Bit.
 Um zu zeigen, dass das angepasste Verfahren das gleiche Ergebnis liefert, nehmen wir als Beispiel $n = 37$. Die Binärdarstellung von $37$ entspricht $100101$. Dann kann man $x^{37}$ als $Q Q QM Q QM$ darstellen wie oben beschrieben. Es gilt:
 \begin{equation}
@@ -71,14 +71,31 @@ Dann wird die in unserer Struktur wie folgt gespeichert:
 \begin{array}{|c|c|c|}\hline
 array[0] & array[1] & array[2]\\
 \hline
-00000000000000000001101100100011 & 00000000000000000000000000000000 & 1 \\
+00000000000000000001101100100011 & 00000000000000000000000000000000 & 1\\ 
 \hline
 \end{array}
 \end{equation*}
-\subsection{Addition und Multiplikation dieser Zahlen}%
+\subsection{Addition, Substraction und Multiplikation dieser Zahlen}%
+\subsubsection{Addition und Substraction}%
+Das Addieren und die Subtrahieren werden auf eine ähnliche Weise durchgeführt, wie wir es in der Schule gelernt haben. Man muss Zellen nacheinander addieren oder subtrahieren und dabei noch auf die Übertragung achten.
+\subsubsection{Multiplikation und Karatsuba-Algorithmus}%
+Wie bereits erwähnt, liegt der Schwerpunkt der Arbeit auf dem Umgang mit großen Zahlen, deren naive Multiplikation sehr aufwendig sein kann und nur in $O(n^2)$ durchgeführt wird. Daher wurde beschlossen, diese Zahlen mit dem Karatsuba-Algorithmus   \cite{Karatsuba} zu multiplizieren, der es erlaubt, die gleichen Zahlen in $O(n^{\log_23})$ zu multiplizieren. \\
+Die Grundidee dieses Algorithmus, der einen Zeitgewinn darstellt, besteht darin, die Anzahl der Multiplikationsoperationen auf großen Zahlen zu reduzieren. Dies wird erreicht, wenn man die einzelne Multiplikationsoperation durch Addition, Subtraktion und bereits bekannte Ergebnisse ausdrückt. \\
+Genauer gesagt, repräsentieren wir unsere Multiplikatoren $A$ und $B$ in dieser Form:
+\begin{equation*}
+A = ax + b \qquad B = cx + d 
+\end{equation*} 
+Und dann bekommen wir das Ergebnis der Multiplikation:
+\begin{equation}\label{eq:karatsuba}
+AB = ac\cdot x^2 + ((a + b)\cdot(c + d) - ac - bd)\cdot x + bd
+\end{equation}
+In dieser Form sieht man genauer, dass man die Kosten einer Multiplikation beibehalten hat.\\
+In unserer Implementierung wiederholen wir ein ähnliches Aufteilungsverfahren, bis wir Zahlen haben, die durch ein einzelnes Element des obigen Arrays darstellbar sind und daher leicht multipliziert werden können.
+\subsection{Ausgabe in binärer und hexadezimaler Form }%
+Es sei auch kurz darauf hingewiesen, dass die Übersetzung großer Zahlen in verschiedene Systeme mit den üblichen Methoden schwierig sein kann. Und so wurden zusätzliche Methoden auf Basis des Gorner-Schemas \cite{Gorner} geschaffen, um diese zu implementieren.
 \section{Genauigkeit}
 Wie in der Einleitung oben erwähnt, gehen wir davon aus, dass der Benutzer über die Konsole eingeben kann, mit welcher Genauigkeit das Ergebnis ausgegeben werden sollte. Wir haben uns dafür entschieden, dass in unserem Fall die Anzahl der korrekten Nachkommastellen eine angemessene Genauigkeit ist. Daher werden wir im Folgenden die Argumentation für die Schätzung der Anzahl der Iterationen demonstrieren, die erforderlich sind, um eine bestimmte Genauigkeit zu erreichen.\\ 
-\\Zuerst kann gezeigt werden \cite{Primzahlen}, dass der n-te Term unserer Rekursion wie folgt aussieht:
+Zuerst kann gezeigt werden \cite{Primzahlen}, dass der n-te Term unserer Rekursion wie folgt aussieht:
 \begin{equation}\label{eq:nthNum}
 \frac{1}{2\sqrt{2}}((1+\sqrt{2})^n-(1-\sqrt{2})^n)
 \end{equation}
@@ -138,14 +155,26 @@ n>1+\frac{1}{2}\cdot\log_2{10}\cdot\log_{10}{\frac{1}{\varepsilon}}
 \begin{equation}\label{eq:finalAproximation}
 n = \lceil 1+1.65\cdot\log_{10}{\frac{1}{\varepsilon}}\rceil
 \end{equation}
-Das Schöne an dieser Formel (\ref{eq:finalAproximation}) ist, dass wir den Logarithmus nicht berechnen müssen, weil wir stattdessen gleich die Anzahl der Nachkommastellen einsetzen können.
+Das Schöne an dieser Formel (\ref{eq:finalAproximation}) ist, dass wir den Logarithmus nicht berechnen müssen, weil wir stattdessen gleich die Anzahl der Nachkommastellen einsetzen können.\\
+Außerdem ist leicht zu erkennen, dass diese Formel (\ref{eq:finalAproximation}) unter Verwendung der Eigenschaften des Logarithmus auf das Hexadezimalsystem übertragen werden kann.
 
 
 
 
 \section{Performanzanalyse}
-
-
+In diesem Abschnitt analysieren wir die Performanz durch die Zeitmessungen der einzelnen Methoden unter verschiedenen Eingaben. Alle Zeitmessungen, die im Folgenden dargestellt werden, wurden auf der Rechnerhalle $lxhalle.in.tum.de$ $5$ mal ausgeführt, der mittlere Wert daraus berechnet und in die Tabelle eingetragen. Die Ergebnisse wurden in Sekunden gemessen:
+\begin{center}
+    \begin{tabular}{|c|c|c|c|c|c|c}
+    \hline
+  & n = 1 & n = 10 & n = 100 & n = 1000 & n = 10000 \\
+\hline
+SimpleExponentiation & 0.000068 & 0.000090 & 0.003510 & 0.575478 & >2 min \\
+\hline
+BinaryExponentiation & 0.000071  & 0.000070  & 0.000277 & 0.004216 & 0.171003 \\ 
+\hline
+    \end{tabular}
+\end{center}
+Der Grund für die entsprechende Zeitmessung bei der Eingabe n = 10000 mit der matrixSimpleExponentiation ist, dass wir Karatsuba-Multiplikation angewendet haben und diese nur dann sehr effizient funktioniert, wenn die Zahlen ungefähr gleich groß sind. Bei der normalen Exponentiation wird immer die Ausgangsmatrix mit der aktuellen Matrix multipliziert, was natürlich sehr ineffektiv ist, da die aktuelle Matrix sehr schnell wächst und die Ausgangsmatrix immer gleich bleibt.
 
 \section{Zusammenfassung und Ausblick}
 
