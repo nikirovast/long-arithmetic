@@ -1,6 +1,6 @@
 #include "errno.h"
 #include "math.h"
-#include "time.h"
+#include <time.h>
 #include <getopt.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -27,7 +27,7 @@ struct bignum
  * Calculate elapsed time
  */
 double time_s(struct timespec s, struct timespec e) {
-    return (e.tv_sec - s.tv_sec) + (e.tv_nsec - s.tv_nsec) * 1e-9;
+    return (double)(e.tv_sec - s.tv_sec) + (double) (e.tv_nsec - s.tv_nsec) * 1e-9;
 }
 
 extern void sum(uint64_t n, bignum *xn, bignum *xnp1);
@@ -138,7 +138,12 @@ int main(int argc, char **argv) {
     matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
     //one might use the next line as comparison to the binary exponentiation
     //matrix *res = matrixSimpleExponentiation(op);
-    if (output) {
+    if (output && hexadecimal) {
+        char *xn = hexToPrint(res->xn);
+        char *xnp1 = hexToPrint(res->xnp1);
+        printf("x_%lu = %s\nx_%lu = %s\n", n, xn, n + 1, xnp1);
+    }
+    else if (output) {
         char *xn = decToPrint(res->xn);
         char *xnp1 = decToPrint(res->xnp1);
         printf("x_%lu = %s\nx_%lu = %s\n", n, xn, n + 1, xnp1);
@@ -165,27 +170,28 @@ int main(int argc, char **argv) {
             final = decToPrint(div);
         }
         printf("Took %f seconds to calculate x_%lu, x_%lu and divide them\n", time_s(start, end), input, input + 1);
-        printf("Result after division: 1,%s\n", final);
+        printf("Result after division and adding 1.0: 1,%s\n", final);
         free(final);
         freeBigNum(div);
-	freeBigNum(oper);
+	    freeBigNum(oper);
         freeMatrix(res);
         return 0;
 }
 
-/**
- *
- * Multiply two matrices.
- *
- */
 
 void printUsage(char **argv)
 {
     printf("Usage: %s <number of digits> \n", argv[0]);
     printf("-x: sets output numeral system to hexadecimal, default: decimal\n");
-    printf("-t: two numbers xn and xnp1 will appear on the screen the division of which results in sqrt(2)\n");
+    printf("-t: two numbers xn and xnp1 will appear on the screen the division of which results in sqrt(2) - 1\n");
     printf("-h|--help: for usage help\n");
 }
+
+/**
+*
+* Multiply two matrices.
+*
+*/
 
 matrix *matrixMultiplication(matrix *matrix1, matrix *matrix2)
 {
