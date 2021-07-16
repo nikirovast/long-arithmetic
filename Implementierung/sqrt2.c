@@ -167,6 +167,7 @@ int main(int argc, char **argv) {
         free(final);
         freeBigNum(div);
         freeMatrix(res);
+        freeBigNum(oper);
         return 0;
 }
 
