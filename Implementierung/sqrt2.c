@@ -529,12 +529,14 @@ bignum *mul(bignum *xn, bignum *xnp1)
         {
             arrayShift(ad_add_bc, bNewSize);
         }
-        bignum *res = add(add(ac, ad_add_bc), bd);
+	bignum *savePtr = add(ac, ad_add_bc);
+        bignum *res = add(savePtr, bd);
         freeBigNum(ac);
         freeBigNum(bd);
         freeBigNum(abcd);
         freeBigNum(abcd_sub_ac);
         freeBigNum(ad_add_bc);
+	freeBigNum(savePtr);
         zeroJustify(res);
 
         return res;
@@ -624,18 +626,26 @@ bignum *div2bignums(bignum *xn, bignum *xnp1)
         temp2 = mul(xnp1, toAdd);
         int compare = compareBignum(xn, temp2);
         if (compare < 1) {
-            res = add(res, toAdd);
+	    bignum *savePtr = add(res, toAdd);
+	    freeBigNum(res);
+            res = savePtr;
             xn = sub(xn, temp2);
+	    freeBigNum(temp2);
+	    freeBigNum(toAdd);
             if (compare == 0) {
                 break;
             }
         }
+	else {
+	    freeBigNum(temp2);
+	    freeBigNum(toAdd);	
+	}
+	
         if (diff == 0) {
             break;
         }
         diff--;
     }
-    free(temp2);
     return res;
 }
 
@@ -1097,6 +1107,7 @@ char *decToPrint(bignum *a) {
         }
     }
     *str = '\0';
+    free(decArray);
     return string;
 }
 
