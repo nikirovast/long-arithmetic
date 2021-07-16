@@ -669,7 +669,7 @@ void zeroJustify(bignum *n) {
 
 /**
  *
- * Counts num of iteratons needed to achieve certain accuracy
+ * Count num of iteratons needed to achieve certain accuracy
  *
  */
 
@@ -679,7 +679,7 @@ uint64_t convertAccToN(uint64_t numDigits) {
 
 /**
  *
- * Converts bignum to hexadecimal format string
+ * Convert bignum to hexadecimal format string
  *
  */
 
@@ -998,7 +998,7 @@ char *decToPrint(bignum *a) {
 
 /**
  *
- * Frees the memory
+ * Free the memory
  *
  */
 
