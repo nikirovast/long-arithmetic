@@ -88,6 +88,7 @@ int main(int argc, char **argv) {
     int hexadecimal = 0;
     int c;
     int output = 0;
+    int args = 0;
     if (argc == 1 || argc > 4) {
         printUsage(argv);
         return 1;
@@ -105,10 +106,12 @@ int main(int argc, char **argv) {
             }
             case 'x': {
                 hexadecimal = 1;
+                args++;
                 break;
             }
             case 't': {
                 output = 1;
+                args++;
                 break;
             }
             default: {
@@ -116,6 +119,10 @@ int main(int argc, char **argv) {
                 exit(1);
             }
         }
+    }
+    if (argc != args + 2) {
+        printUsage(argv);
+        return 1;
     }
     // + flags because of a known bug of getops_long changing the order of arguments
     uint64_t n = strtoull(argv[1 + hexadecimal + output], NULL, 0);
@@ -133,7 +140,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    uint64_t op = convertAccToN(n);
+    uint64_t op = convertAccToN(n, hexadecimal);
     struct timespec start;
     clock_gettime(CLOCK_MONOTONIC, &start);
     matrix *res = matrixBinaryExponentiation(op, calculateHighestBit(op));
