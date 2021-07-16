@@ -166,8 +166,8 @@ int main(int argc, char **argv) {
         printf("Result after division: 1,%s\n", final);
         free(final);
         freeBigNum(div);
+	freeBigNum(oper);
         freeMatrix(res);
-        freeBigNum(oper);
         return 0;
 }
 
@@ -473,17 +473,40 @@ bignum *mul(bignum *xn, bignum *xnp1)
             bNewSize = dNewSize;
             aNewSize = size1 - bNewSize;
         }
-        bignum *b = new_bignum(bNewSize);
-
+	bignum *b = malloc(sizeof(bignum));
+	if (b == NULL)
+	{
+            fprintf(stderr, "Couldn't allocate memory for b in mul\n");
+            exit(1);
+	}
+	b->size = bNewSize;
         // we need to write in b the second part of xn
         b->array = xn->array;
 
-        bignum *a = new_bignum(aNewSize);
+        bignum *a = malloc(sizeof(bignum));
+	if (a == NULL)
+	{
+            fprintf(stderr, "Couldn't allocate memory for a in mul\n");
+            exit(1);
+	}
+	a->size = aNewSize;
         a->array = xn->array + bNewSize;
-        bignum *c = new_bignum(cNewSize);
+        bignum *c = malloc(sizeof(bignum));
+	if (c == NULL)
+	{
+            fprintf(stderr, "Couldn't allocate memory for c in mul\n");
+            exit(1);
+	}
+	c->size = cNewSize;
         c->array = xnp1->array + dNewSize;
 
-        bignum *d = new_bignum(dNewSize);
+        bignum *d = malloc(sizeof(bignum));
+	if (d == NULL)
+	{
+            fprintf(stderr, "Couldn't allocate memory for d in mul\n");
+            exit(1);
+	}
+	d->size = dNewSize;
         d->array = xnp1->array;
         bignum *ac = mul(a, c);
         bignum *bd = mul(b, d);
