@@ -24,7 +24,7 @@ sum:
     add r14, r15
     mov rsi, 0
     adc rsi, 0
-    mov[rdx], r14
+    mov [rdx], r14
     inc rax
     jmp summ
     loop_end:
@@ -33,6 +33,6 @@ sum:
     add rdx, rbx
     mov r14, [rdx]
     add r14, rsi
-    mov[rdx], r14
+    mov [rdx], r14
     sum_end:
     ret
