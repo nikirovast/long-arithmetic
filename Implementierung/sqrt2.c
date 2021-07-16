@@ -152,7 +152,9 @@ int main(int argc, char **argv) {
         bignum *oper = new_bignum(1);
         *oper->array = 10;
         for (uint64_t i = 0; i < n; i++) {
-            res->xn = mul(res->xn, oper);
+	    bignum *savePtr = mul(res->xn, oper);
+	    freeBigNum(res->xn);
+            res->xn = savePtr;
         }
         bignum *div = div2bignums(res->xn, res->xnp1);
         clock_gettime(CLOCK_MONOTONIC, &end);
