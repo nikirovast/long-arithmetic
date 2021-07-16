@@ -611,7 +611,7 @@ bignum *mul2num(elem_size_t x, elem_size_t y)
 
 bignum *div2bignums(bignum *xn, bignum *xnp1)
 {
-    bignum *res = new_bignum(0);
+    bignum *res = new_bignum(1);
     res->array[0] = 0;
     uint64_t xnBits = xn->size >= 2 ? (xn->size - 1) * N + calculateHighestBit(xn->array[xn->size - 1]) + 1
                                     : calculateHighestBit(xn->array[0]) + 1;
