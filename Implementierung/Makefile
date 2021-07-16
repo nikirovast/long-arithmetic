@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 CC:=gcc
-CFLAGS+=-Wall -Wextra -std=c11 -Wpedantic
+CFLAGS+=-Wall -Wextra -std=c11 -Wpedantic -lm
 
 all: sqrt2
 
