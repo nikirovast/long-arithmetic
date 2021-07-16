@@ -149,12 +149,12 @@ int main(int argc, char **argv) {
     if (output && hexadecimal) {
         char *xn = hexToPrint(res->xn);
         char *xnp1 = hexToPrint(res->xnp1);
-        printf("x_%lu = %s\nx_%lu = %s\n", n, xn, n + 1, xnp1);
+        printf("x_%lu = %s\nx_%lu = %s\n", op, xn, op + 1, xnp1);
     }
     else if (output) {
         char *xn = decToPrint(res->xn);
         char *xnp1 = decToPrint(res->xnp1);
-        printf("x_%lu = %s\nx_%lu = %s\n", n, xn, n + 1, xnp1);
+        printf("x_%lu = %s\nx_%lu = %s\n", op, xn, op + 1, xnp1);
     }
     uint64_t input = n;
     // we need it in order to convert decimal to hexadecimal which is pretty complex
@@ -177,7 +177,7 @@ int main(int argc, char **argv) {
         } else {
             final = decToPrint(div);
         }
-        printf("Took %f seconds to calculate x_%lu, x_%lu and divide them\n", time_s(start, end), input, input + 1);
+        printf("Took %f seconds to calculate x_%lu, x_%lu and divide them\n", time_s(start, end), op, op + 1);
         printf("Result after division and adding 1.0: 1,%s\n", final);
         free(final);
         freeBigNum(div);
