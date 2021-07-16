@@ -793,7 +793,7 @@ elem_size_t *mul16(elem_size_t *array, uint64_t *size)
     uint64_t tmp = 0;
     uint64_t max = 16;
     uint64_t size2 = *size;
-    for (int i = 0; i < *size; i++)
+    for (uint64_t i = 0; i < *size; i++)
     {
         *(array + i) = (tmp += *(array + i) * max) % POWER10_9;
         tmp /= POWER10_9;
