@@ -177,7 +177,7 @@ int main(int argc, char **argv) {
         } else {
             final = decToPrint(div);
         }
-        printf("Took %f seconds to calculate x_%lu, x_%lu and divide them\n", time_s(start, end), op, op + 1);
+        printf("Took %f seconds to calculate x_%lu, x_%lu and divide them to get %lu digits of sqrt(2)\n", time_s(start, end), op, op + 1, input);
         printf("Result after division and adding 1.0: 1,%s\n", final);
         free(final);
         freeBigNum(div);
